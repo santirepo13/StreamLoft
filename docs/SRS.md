@@ -161,7 +161,7 @@ Include this because the LLM needs to understand requirement force.
 | FR-004 | The system shall assign a StreamLoft stream key on first login | User | First login attempt | User ID | Generate unique stream key if not exists, store in database | Stream key returned and stored | Database error → show error | New users receive unique stream key | BR-002 | TC-004 |
 | FR-005 | The system shall return pre-allowed destinations for the logged-in user | User | Login successful | User ID | Query destinations assigned to user | List of allowed destinations with names, no stream keys populated | No destinations → show empty list | User sees only destinations admin allowed | BR-003 | TC-005 |
 | FR-006 | The system shall allow user to input stream keys for allowed destinations | User | User enters stream key for a destination | Destination ID, stream key | Validate format, store in database | Stream key saved | Invalid format → show error | User can save stream key for each allowed destination | BR-004 | TC-006 |
-| FR-007 | The system shall enable/disable destinations at runtime without affecting other users | User | User toggles destination switch | Destination ID, enabled state | Update destination in database, start/stop Go API forwarding worker | Destination enabled/disabled | Worker start error → show warning, other users unaffected | Toggle affects only current user's destination, no impact on other users | BR-005 | TC-007 |
+| FR-007 | The system shall forward to a destination only if a user_destination row exists for that user and destination | User | User opens destination config | Destination ID | Go API checks user_destination row exists with stream_key set; starts forwarding worker | Destination forwarded | No row or no stream_key → log error, don't forward | Toggle affects only current user's destination, no impact on other users | BR-005 | TC-007 |
 | FR-008 | The system shall forward incoming RTMP stream to all enabled destinations | Go API | Stream pushed to StreamLoft RTMP, Go API receives callback | RTMP stream | Go API starts isolated forwarding workers that read user's incoming SRS stream and push to each enabled destination | Stream appears on external platforms | Destination unreachable → log error, continue to others | All enabled destinations receive stream | BR-005 | TC-008 |
 | FR-009 | The system shall detect incoming stream and notify API | SRS | Stream starts | Stream metadata via HTTP callback | SRS calls API on_publish callback with stream info | API receives notification, logs session | API unreachable → log locally | API aware of active stream | BR-006 | TC-009 |
 | FR-010 | The system shall display live/offline status in Windows app | User | App polls API or receives push notification | Stream status | Show indicator in dashboard | Live/Offline status displayed | Connection error → show unknown | User sees current stream status | BR-006 | TC-010 |
@@ -245,31 +245,35 @@ Include this because the LLM needs to understand requirement force.
 
 ---
 
-## UC-003: Toggle Destination Enabled/Disabled
+## UC-003: Configure Destination Stream Key
 
 | Field | Description |
 | --- | --- |
 | Use Case ID | UC-003 |
 | --- | --- |
 | Actor | User |
-| Goal | Enable or disable a destination for streaming |
-| Preconditions | User is logged in, destination has stream key configured |
-| Trigger | User toggles switch for destination |
-| Postconditions | Go API starts/stops forwarding worker for that destination, other users unaffected |
-| Related Requirements | FR-007, FR-008 |
+| Goal | Input stream key for an allowed destination |
+| Preconditions | User is logged in, destination is assigned to user |
+| Trigger | User clicks on destination to add stream key |
+| Postconditions | Stream key saved to database, Go API starts forwarding worker |
+| Related Requirements | FR-006, FR-007 |
 
 | Step | Actor Action | System Response |
 | --- | --- | --- |
-| 1 | User toggles destination switch | |
-| 2 | | Update database for this user's destination |
-| 3 | | Start/stop Go API forwarding worker for that destination |
-| 4 | | Confirm status |
+| 1 | User clicks destination | |
+| 2 | | Show input field for stream key |
+| 3 | User enters stream key from platform | |
+| 4 | | Validate format |
+| 5 | | Encrypt and save to database |
+| 6 | | Start forwarding worker for that destination |
+| 7 | | Confirm save |
 
 | Exception Flows |
 
 | Exception ID | Error Condition | Expected System Response |
 | --- | --- | --- |
-| EX-001 | SRS communication error | Show warning, other users unaffected |
+| EX-001 | Invalid stream key format | Show format error |
+| EX-002 | Worker start fails | Show warning, log error |
 
 ---
 
@@ -291,9 +295,9 @@ Include this because the LLM needs to understand requirement force.
 | 2 | | SRS receives RTMP stream, sends on_publish callback to Go API |
 | 3 | | Go API detects bitrate, compares to user's configured speed |
 | 4 | | If below threshold, trigger warning |
-| 5 | | Go API starts forwarding workers for all enabled destinations |
-| 6 | | Go API logs session start for each enabled destination |
-| 7 | | Forward to all enabled destinations via Go API workers |
+| 5 | | Go API starts forwarding workers for all of the user's destinations that have a stream_key set |
+| 6 | | Go API logs session start for each destination with stream_key |
+| 7 | | Forward to all destinations with stream_key set via Go API workers |
 | 8 | | Update Windows app with "Live" status |
 | 9 | User stops streaming | |
 | 10 | | SRS sends on_unpublish callback to Go API |
@@ -350,7 +354,7 @@ Include this because the LLM needs to understand requirement force.
 | BR-002 | StreamLoft stream key is assigned on first login and only changeable via admin SQL | FR-004 |
 | BR-003 | Each user has pre-allowed destinations assigned by admin; unlimited as long as admin configures them | FR-005 |
 | BR-004 | User inputs stream keys for allowed destinations; stream keys stored encrypted in database | FR-006 |
-| BR-005 | Destinations can be enabled/disabled at runtime; changes only affect current user, not other users | FR-007, FR-008 |
+| BR-005 | A user streams to a destination only if a user_destination row exists for that user and destination. Assignment IS the permission. | FR-007, FR-008 |
 | BR-006 | Windows app displays live/offline status based on stream detection | FR-009, FR-010 |
 | BR-007 | Stream start/stop events logged per site with duration in minutes | FR-011 |
 | BR-008 | System warns when upload bitrate is below 30% of user's configured speed | FR-012 |
@@ -401,7 +405,7 @@ Use only if the system has a user interface.
 | UI-004 | The system shall display list of allowed destinations | Dashboard | Each destination shows name, toggle, stream key field |
 | UI-005 | The system shall display live/offline status indicator | Dashboard | Green = Live, Gray = Offline |
 | UI-006 | The system shall display bitrate warning when below threshold | Dashboard | Warning shown when upload < 30% below configured |
-| UI-007 | The system shall allow toggling destinations on/off | Destination List | Toggle changes state, shows feedback, does not affect other users |
+| UI-007 | The system shall display destinations with stream key input and status | Destination List | Each destination shows name, stream key field, and active/inactive status |
 | UI-008 | The system shall allow input of stream keys for allowed destinations | Destination Detail | Input field accepts key, save button works |
 | UI-009 | The system shall display stream events per site with duration | Dashboard / Events | Events listed with site name, date, duration in minutes |
 | UI-010 | The system shall display logout button on dashboard | Dashboard | User can logout from current machine only |
@@ -440,7 +444,7 @@ Use only if the system exposes or consumes APIs.
 | API-004 | GET | /user | Return user info, RTMP URL, stream key, name, allowed destinations | FR-003, FR-004, FR-005 |
 | API-005 | GET | /destinations | Return list of allowed destinations for user | FR-005 |
 | API-006 | PUT | /destinations/:id | Update stream key for destination | FR-006 |
-| API-007 | PUT | /destinations/:id/toggle | Enable/disable destination | FR-007 |
+| API-007 | PUT | /destinations/:id | Set or update stream key for destination; Go API starts forwarding if stream_key is present | FR-006, FR-007 |
 | API-008 | POST | /stream/start | Receive stream start notification from SRS, log session | FR-009, FR-011 |
 | API-009 | POST | /stream/stop | Receive stream stop notification from SRS, calculate duration, log session | FR-011 |
 | API-010 | GET | /stream/status | Return current stream status (live/offline) | FR-010 |
@@ -455,7 +459,8 @@ Use only if the system exposes or consumes APIs.
 | Entity | Purpose |
 | --- | --- |
 | User | Stores user credentials, StreamLoft stream key, name |
-| UserDestination | Stores allowed destinations per user, RTMP URL, stream key, enabled state |
+| Destination | Global platform templates (YouTube, Twitch, Facebook) with name and RTMP URL |
+| UserDestination | Links user to destination with their stream key. Assignment IS the permission — no separate enabled/disabled flag |
 | BroadcastSession | Logs stream start/stop events per site with date and duration |
 | UserMachine | Tracks which user was last logged in on each machine |
 | UserSession | Stores per-machine authentication tokens - allows multiple devices per user |
@@ -473,16 +478,23 @@ Use only if the system exposes or consumes APIs.
 | created_at | TIMESTAMP | Yes | Creation timestamp | Auto |
 | updated_at | TIMESTAMP | Yes | Last update timestamp | Auto |
 
-**UserDestination Table** (destination assigned to a specific user - stores external RTMP URL, user's stream key, enabled state per user)
+**Destination Table** (platform templates created by admin, one per external streaming service)
+
+| Field | Type | Required | Meaning | Validation Rule |
+| --- | --- | --- | --- | --- |
+| id | SERIAL | Yes | Primary key | Auto-increment |
+| name | VARCHAR(100) | Yes | Platform name | Unique, non-empty |
+| rtmp_url | VARCHAR(500) | Yes | Platform RTMP ingest URL | Valid RTMP URL format |
+| created_at | TIMESTAMP | Yes | Creation timestamp | Auto |
+
+**UserDestination Table** (links user to destination with their stream key — assignment IS the permission)
 
 | Field | Type | Required | Meaning | Validation Rule |
 | --- | --- | --- | --- | --- |
 | id | SERIAL | Yes | Primary key | Auto-increment |
 | user_id | INTEGER | Yes | Foreign key to User | Required |
-| name | VARCHAR(100) | Yes | Destination name (YouTube, Twitch, etc.) | Required |
-| rtmp_url | VARCHAR(500) | Yes | External RTMP URL | Valid URL format |
-| stream_key | VARCHAR(256) | No | User's stream key for this destination | Encrypted |
-| enabled | BOOLEAN | Yes | Whether destination is active | Default false |
+| destination_id | INTEGER | Yes | Foreign key to Destination | Required |
+| stream_key | TEXT | No | User's stream key for this destination | Encrypted |
 | created_at | TIMESTAMP | Yes | Creation timestamp | Auto |
 | updated_at | TIMESTAMP | Yes | Last update timestamp | Auto |
 
@@ -526,7 +538,7 @@ Use only if the system exposes or consumes APIs.
 | --- | --- |
 | DR-001 | Destination stream keys shall be encrypted at rest |
 | DR-002 | UserMachine table shall store last used user per machine |
-| DR-003 | Broadcast sessions shall be retained for 30 days |
+| DR-003 | Admin assigns destinations to users by inserting into user_destinations |
 | DR-004 | User configured bitrate shall be stored for comparison |
 | DR-005 | Admin SQL files shall be stored in database/admin-sql/ folder |
 | DR-006 | Admin SQL files shall be version-controlled in Git |
@@ -545,6 +557,7 @@ Use only if the system exposes or consumes APIs.
 | DI-002 | StreamLoft stream_key must be unique |
 | DI-003 | Foreign key constraints must enforce user-destination relationship |
 | DI-004 | BroadcastSession allows multiple sessions per user per destination per day |
+| DI-005 | user_destinations must have one row per user per destination |
 
 ---
 
