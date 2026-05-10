@@ -1,0 +1,25 @@
+﻿<Window x:Class="StreamLoftApp.Views.LoginView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="StreamLoft Login" Height="300" Width="400">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <TextBlock Text="StreamLoft Login" FontSize="24" FontWeight="Bold" 
+                   HorizontalAlignment="Center" Margin="0,0,0,20"/>
+        
+        <StackPanel Grid.Row="1" VerticalAlignment="Center">
+            <TextBlock Text="User ID:" Margin="0,0,0,5"/>
+            <TextBox x:Name="UserIdTextBox" Width="200" HorizontalAlignment="Left"/>
+            <Button Content="Login" Width="100" Height="30" Margin="0,20,0,0"
+                    Click="LoginButton_Click"/>
+        </StackPanel>
+        
+        <TextBlock Grid.Row="2" Text="Enter your numeric user ID" 
+                   FontSize="12" Foreground="Gray" HorizontalAlignment="Center"/>
+    </Grid>
+</Window>
