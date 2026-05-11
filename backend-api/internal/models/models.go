@@ -6,8 +6,8 @@ type User struct {
 	ID        int       `json:"id"`
 	NumericID string    `json:"numeric_id"`
 	Name      string    `json:"name"`
-	StreamKey string    `json:"stream_key,omitempty"`
-	Bitrate   *int      `json:"bitrate,omitempty"` // User's configured upload bitrate in kbps
+	StreamKey *string   `json:"stream_key,omitempty"`
+	Bitrate   *int      `json:"bitrate,omitempty"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -24,7 +24,7 @@ type UserDestination struct {
 	UserID         int          `json:"user_id"`
 	DestinationID  int          `json:"destination_id"`
 	Destination    *Destination `json:"destination,omitempty"`
-	StreamKey      string       `json:"stream_key,omitempty"`
+	StreamKey      *string      `json:"stream_key,omitempty"`
 	CreatedAt      time.Time    `json:"created_at"`
 	UpdatedAt      time.Time    `json:"updated_at"`
 }

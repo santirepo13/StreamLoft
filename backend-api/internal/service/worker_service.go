@@ -33,7 +33,7 @@ func (s *WorkerService) StartWorker(ctx context.Context, userID, userDestination
 	if err != nil {
 		return err
 	}
-	if user == nil || user.StreamKey == "" {
+	if user == nil || user.StreamKey == nil || *user.StreamKey == "" {
 		return nil
 	}
 
@@ -43,14 +43,14 @@ func (s *WorkerService) StartWorker(ctx context.Context, userID, userDestination
 	}
 
 	for _, dest := range destinations {
-		if dest.ID == userDestinationID && dest.StreamKey != "" {
-			decryptedKey, err := s.encryptor.Decrypt(dest.StreamKey)
+		if dest.ID == userDestinationID && dest.StreamKey != nil && *dest.StreamKey != "" {
+			decryptedKey, err := s.encryptor.Decrypt(*dest.StreamKey)
 			if err != nil {
 				return err
 			}
 
 			targetURL := dest.Destination.RTMPURL + "/" + decryptedKey
-			return s.forwardingMgr.StartWorker(ctx, userID, userDestinationID, user.StreamKey, targetURL)
+			return s.forwardingMgr.StartWorker(ctx, userID, userDestinationID, *user.StreamKey, targetURL)
 		}
 	}
 

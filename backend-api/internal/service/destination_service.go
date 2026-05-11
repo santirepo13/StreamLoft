@@ -47,7 +47,7 @@ func (s *DestinationService) GetDestinations(ctx context.Context, userID int) ([
 			ID:         d.ID,
 			Name:       d.Destination.Name,
 			RTMPURL:    d.Destination.RTMPURL,
-			Configured: d.StreamKey != "",
+			Configured: d.StreamKey != nil && *d.StreamKey != "",
 		}
 	}
 
@@ -64,7 +64,7 @@ func (s *DestinationService) UpdateStreamKey(ctx context.Context, userID, destin
 	}
 
 	oldStreamKey := dest.StreamKey
-	wasConfigured := oldStreamKey != ""
+	wasConfigured := oldStreamKey != nil && *oldStreamKey != ""
 
 	if streamKey != "" {
 		encrypted, err := s.encryptor.Encrypt(streamKey)

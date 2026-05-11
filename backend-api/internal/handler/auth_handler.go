@@ -31,7 +31,7 @@ type LoginRequest struct {
 type LoginResponse struct {
 	User          *UserResponse        `json:"user"`
 	RTMPURL       string                `json:"rtmp_url"`
-	StreamKey     string                `json:"stream_key"`
+	StreamKey     *string               `json:"stream_key"`
 	AccessToken   string                `json:"access_token"`
 	RefreshToken  string                `json:"refresh_token"`
 	Destinations  []DestinationResponse `json:"destinations"`
@@ -47,7 +47,7 @@ type DestinationResponse struct {
 	ID           int    `json:"id"`
 	Name         string `json:"name"`
 	RTMPURL      string `json:"rtmp_url"`
-	StreamKey    string `json:"stream_key,omitempty"`
+	StreamKey    *string `json:"stream_key,omitempty"`
 	Configured   bool   `json:"configured"`
 }
 
@@ -75,7 +75,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 			Name:       d.Destination.Name,
 			RTMPURL:    d.Destination.RTMPURL,
 			StreamKey:  d.StreamKey,
-			Configured: d.StreamKey != "",
+			Configured: d.StreamKey != nil && *d.StreamKey != "",
 		}
 	}
 
@@ -160,9 +160,9 @@ func mapDestinations(destinations []models.UserDestination) []DestinationRespons
 			ID:         d.ID,
 			Name:       d.Destination.Name,
 			RTMPURL:    d.Destination.RTMPURL,
-			Configured: d.StreamKey != "",
+			Configured: d.StreamKey != nil && *d.StreamKey != "",
 		}
-		if d.StreamKey != "" {
+		if d.StreamKey != nil && *d.StreamKey != "" {
 			result[i].StreamKey = d.StreamKey
 		}
 	}

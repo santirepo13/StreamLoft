@@ -55,12 +55,12 @@ func (s *AuthService) Login(ctx context.Context, numericID, machineID string) (*
 		return nil, ErrInvalidCredentials
 	}
 
-	if user.StreamKey == "" {
+	if user.StreamKey == nil || *user.StreamKey == "" {
 		streamKey := generateStreamKey()
 		if err := s.userRepo.UpdateStreamKey(ctx, user.ID, streamKey); err != nil {
 			return nil, err
 		}
-		user.StreamKey = streamKey
+		user.StreamKey = &streamKey
 	}
 
 	_, err = s.machineRepo.Upsert(ctx, machineID, user.ID)
