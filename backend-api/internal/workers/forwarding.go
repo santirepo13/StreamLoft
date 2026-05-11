@@ -173,14 +173,18 @@ func (m *ForwardingManager) StartWorker(ctx context.Context, userID int, userDes
 	// Capture stderr to diagnose failures
 	stderrBuf := new(strings.Builder)
 
-	cmd := exec.Command(
-		"ffmpeg",
-		"-i", inputURL,
-		"-c:v", "copy",
-		"-c:a", "copy",
-		"-f", "flv",
-		destinationRTMPURL,
-	)
+cmd := exec.Command(
+	"ffmpeg",
+	"-re",
+	"-fflags", "+genpts+igndts",
+	"-probesize", "5M",
+	"-analyzeduration", "5M",
+	"-i", inputURL,
+	"-c:v", "copy",
+	"-c:a", "copy",
+	"-f", "flv",
+	destinationRTMPURL,
+)
 
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = io.MultiWriter(os.Stderr, stderrBuf)
