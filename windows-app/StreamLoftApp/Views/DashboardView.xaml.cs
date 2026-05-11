@@ -23,7 +23,7 @@ namespace StreamLoftApp.Views
 
         private void NavigateToDestination(DestinationItem destination)
         {
-            var destWindow = new DestinationView(destination.Id, destination.Name, destination.Configured);
+            var destWindow = new DestinationView(destination.Id, destination.Name, destination.Configured, destination.StreamKey);
             destWindow.ShowDialog();
             
             // Refresh data after returning

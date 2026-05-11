@@ -132,7 +132,8 @@ namespace StreamLoftApp.ViewModels
                         Id = dest.Id,
                         Name = dest.Name,
                         RtmpUrl = dest.RtmpUrl,
-                        Configured = dest.Configured
+                        Configured = dest.Configured,
+                        StreamKey = dest.StreamKey ?? ""
                     });
                 }
 
@@ -236,5 +237,6 @@ namespace StreamLoftApp.ViewModels
         public string Name { get; set; }
         public string RtmpUrl { get; set; }
         public bool Configured { get; set; }
+        public string StreamKey { get; set; }
     }
 }

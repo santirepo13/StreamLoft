@@ -269,6 +269,9 @@ namespace StreamLoftApp.Services
         public string RtmpUrl { get; set; }
 
         public bool Configured { get; set; }
+        
+        [JsonProperty("stream_key")]
+        public string StreamKey { get; set; }
     }
 
     public class DestinationsResponse

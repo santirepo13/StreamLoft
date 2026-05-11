@@ -65,26 +65,19 @@ namespace StreamLoftApp.ViewModels
         public event Action OnSaved;
         public event Action OnCancel;
 
-        public DestinationViewModel(int destinationId, string destinationName, bool isConfigured)
+        public DestinationViewModel(int destinationId, string destinationName, bool isConfigured, string streamKey)
         {
             _apiService = new ApiService(new TokenStorageService());
             _destinationId = destinationId;
             _destinationName = destinationName;
             _isConfigured = isConfigured;
+            
+            // Show actual stream key in the field
+            StreamKeyInput = streamKey ?? "";
+            _isConfigured = !string.IsNullOrEmpty(StreamKeyInput);
 
             SaveCommand = new RelayCommand(async _ => await ExecuteSaveAsync(), _ => !IsSaving);
             CancelCommand = new RelayCommand(_ => OnCancel?.Invoke());
-
-            // SEC-013: Never show saved stream key - show masked or empty
-            StreamKeyInput = isConfigured ? "" : "";
-        }
-
-        public void SetInitialStreamKey(string streamKey)
-        {
-            // Only called when navigating - still hide per SEC-013
-            // Show masked version instead of actual key
-            StreamKeyInput = _isConfigured ? "" : "";
-            IsConfigured = !string.IsNullOrEmpty(streamKey);
         }
 
         private async System.Threading.Tasks.Task ExecuteSaveAsync()
@@ -107,8 +100,7 @@ namespace StreamLoftApp.ViewModels
             {
                 await _apiService.UpdateDestinationAsync(_destinationId, StreamKeyInput ?? "");
 
-                // SEC-013: After save, hide the stream key
-                StreamKeyInput = "";
+                // Update configured status based on saved value
                 IsConfigured = !string.IsNullOrEmpty(StreamKeyInput);
                 ShowSavedIndicator = true;
 

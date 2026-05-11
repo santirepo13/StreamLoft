@@ -33,6 +33,7 @@ type destinationResponse struct {
 	Name        string `json:"name"`
 	RTMPURL     string `json:"rtmp_url"`
 	Configured  bool   `json:"configured"`
+	StreamKey   string `json:"stream_key"`
 }
 
 func (s *DestinationService) GetDestinations(ctx context.Context, userID int) ([]destinationResponse, error) {
@@ -43,11 +44,21 @@ func (s *DestinationService) GetDestinations(ctx context.Context, userID int) ([
 
 	result := make([]destinationResponse, len(destinations))
 	for i, d := range destinations {
+		// Decrypt stream key for display in UI
+		var decryptedKey string
+		if d.StreamKey != nil && *d.StreamKey != "" {
+			decryptedKey, err = s.encryptor.Decrypt(*d.StreamKey)
+			if err != nil {
+				decryptedKey = "" // Don't expose encrypted key on error
+			}
+		}
+		
 		result[i] = destinationResponse{
 			ID:         d.ID,
 			Name:       d.Destination.Name,
 			RTMPURL:    d.Destination.RTMPURL,
 			Configured: d.StreamKey != nil && *d.StreamKey != "",
+			StreamKey:  decryptedKey,
 		}
 	}
 

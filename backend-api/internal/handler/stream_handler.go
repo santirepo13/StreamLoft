@@ -40,22 +40,30 @@ type UpdateBitrateRequest struct {
 func (h *StreamHandler) Start(c *gin.Context) {
 	log.Printf("STREAM_HANDLER_START: Received POST /stream/start request")
 	
+	// Try to get stream key from query params first (SRS callback format: ?stream=KEY)
+	streamKey := c.Query("stream")
+	detectedBitrate := 0
+	
+	// Also check JSON body for backward compatibility or other callers
 	var req StreamStartRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		log.Printf("STREAM_HANDLER_ERROR: Failed to parse JSON: %v", err)
-		errors.BindJSONError(c, err)
-		return
+	if err := c.ShouldBindJSON(&req); err == nil {
+		if streamKey == "" && req.StreamKey != "" {
+			streamKey = req.StreamKey
+		}
+		if req.DetectedBitrate > 0 {
+			detectedBitrate = req.DetectedBitrate
+		}
 	}
 
-	log.Printf("STREAM_HANDLER_INFO: Processing stream_key=%s, detected_bitrate=%d", req.StreamKey, req.DetectedBitrate)
+	log.Printf("STREAM_HANDLER_INFO: Processing stream_key=%s, detected_bitrate=%d", streamKey, detectedBitrate)
 
-	if req.StreamKey == "" {
+	if streamKey == "" {
 		log.Printf("STREAM_HANDLER_ERROR: stream_key is required")
 		errors.RespondWithError(c, errors.BadRequest("stream_key is required"))
 		return
 	}
 
-	if err := h.streamService.StartStream(c.Request.Context(), req.StreamKey, req.DetectedBitrate); err != nil {
+	if err := h.streamService.StartStream(c.Request.Context(), streamKey, detectedBitrate); err != nil {
 		log.Printf("STREAM_HANDLER_ERROR: Failed to start stream: %v", err)
 		errors.RespondWithError(c, errors.Internal("failed to start stream: "+err.Error()))
 		return
@@ -68,22 +76,26 @@ func (h *StreamHandler) Start(c *gin.Context) {
 func (h *StreamHandler) Stop(c *gin.Context) {
 	log.Printf("STREAM_HANDLER_STOP: Received POST /stream/stop request")
 	
+	// Try to get stream key from query params first (SRS callback format: ?stream=KEY)
+	streamKey := c.Query("stream")
+	
+	// Also check JSON body for backward compatibility or other callers
 	var req StreamStartRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		log.Printf("STREAM_HANDLER_ERROR: Failed to parse JSON: %v", err)
-		errors.BindJSONError(c, err)
-		return
+	if err := c.ShouldBindJSON(&req); err == nil {
+		if streamKey == "" && req.StreamKey != "" {
+			streamKey = req.StreamKey
+		}
 	}
 
-	log.Printf("STREAM_HANDLER_INFO: Processing stream_key=%s for stop", req.StreamKey)
+	log.Printf("STREAM_HANDLER_INFO: Processing stream_key=%s for stop", streamKey)
 
-	if req.StreamKey == "" {
+	if streamKey == "" {
 		log.Printf("STREAM_HANDLER_ERROR: stream_key is required")
 		errors.RespondWithError(c, errors.BadRequest("stream_key is required"))
 		return
 	}
 
-	if err := h.streamService.StopStream(c.Request.Context(), req.StreamKey); err != nil {
+	if err := h.streamService.StopStream(c.Request.Context(), streamKey); err != nil {
 		log.Printf("STREAM_HANDLER_ERROR: Failed to stop stream: %v", err)
 		errors.RespondWithError(c, errors.Internal("failed to stop stream: "+err.Error()))
 		return
