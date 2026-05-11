@@ -174,17 +174,18 @@ func (m *ForwardingManager) StartWorker(ctx context.Context, userID int, userDes
 	stderrBuf := new(strings.Builder)
 
 cmd := exec.Command(
-	"ffmpeg",
-	"-re",
-	"-fflags", "+genpts+igndts",
-	"-probesize", "5M",
-	"-analyzeduration", "5M",
-	"-i", inputURL,
-	"-c:v", "copy",
-	"-c:a", "copy",
-	"-f", "flv",
-	destinationRTMPURL,
-)
+		"ffmpeg",
+		"-re",
+		"-fflags", "+genpts+igndts",
+		"-probesize", "5M",
+		"-analyzeduration", "5M",
+		"-i", inputURL,
+		"-c:v", "copy",
+		"-c:a", "copy",
+		"-f", "flv",
+		"-flvflags", "no_duration_filesize",
+		destinationRTMPURL+"?chunk_size=4096&tcp_nodelay=1&rtmp_live=1",
+	)
 
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = io.MultiWriter(os.Stderr, stderrBuf)
