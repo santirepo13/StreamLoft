@@ -39,7 +39,7 @@ func AuthMiddleware(validator interfaces.TokenService) gin.HandlerFunc {
 			return
 		}
 
-		userID, ok := claims["user_id"].(float64)
+		userID, ok := claims["user_id"].(int)
 		if !ok {
 			errors.RespondWithError(c, errors.Unauthorized("Invalid token claims"))
 			c.Abort()

@@ -71,7 +71,7 @@ func (s *JWTService) RefreshToken(oldTokenString string, newExpiry time.Time) (s
 		return "", err
 	}
 
-	userID := int(claims["user_id"].(float64))
+	userID := int(claims["user_id"].(int))
 	machineID := claims["machine_id"].(string)
 
 	return s.GenerateToken(userID, machineID, newExpiry)
