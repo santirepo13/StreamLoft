@@ -75,16 +75,13 @@ func (s *AuthService) Login(ctx context.Context, numericID, machineID string) (*
 
 	refreshToken := generateTokenString()
 
-	encAccessToken, err := s.encryptor.Encrypt(accessToken)
-	if err != nil {
-		return nil, err
-	}
-	encRefreshToken, err := s.encryptor.Encrypt(refreshToken)
-	if err != nil {
-		return nil, err
-	}
+	// Note: Tokens stored as RAW (not encrypted) because:
+	// - access_token needed for JWT validation lookup in session
+	// - Both verified via HMAC signature, not hidden
+	// - Short-lived (3 days) reduces exposure risk
+	// - stream_key in user_destinations stays encrypted (external credentials)
 
-	_, err = s.sessionRepo.Create(ctx, user.ID, machineID, encAccessToken, encRefreshToken, s.tokenExpiry)
+	_, err = s.sessionRepo.Create(ctx, user.ID, machineID, accessToken, refreshToken, s.tokenExpiry)
 	if err != nil {
 		return nil, err
 	}
@@ -116,12 +113,8 @@ func (s *AuthService) Refresh(ctx context.Context, refreshToken string) (string,
 		return "", err
 	}
 
-	encAccessToken, err := s.encryptor.Encrypt(newAccessToken)
-	if err != nil {
-		return "", err
-	}
-
-	if err := s.sessionRepo.UpdateAccessToken(ctx, session.ID, encAccessToken, s.tokenExpiry); err != nil {
+	// Store RAW token (not encrypted) for consistency with login
+	if err := s.sessionRepo.UpdateAccessToken(ctx, session.ID, newAccessToken, s.tokenExpiry); err != nil {
 		return "", err
 	}
 

@@ -219,10 +219,18 @@ namespace StreamLoftApp.Services
         [JsonProperty("name")]
         public string Name { get; set; }
 
+        [JsonProperty("access_token")]
         public string AccessToken { get; set; }
+
+        [JsonProperty("refresh_token")]
         public string RefreshToken { get; set; }
+
+        [JsonProperty("stream_key")]
         public string StreamKey { get; set; }
+
+        [JsonProperty("rtmp_url")]
         public string RtmpUrl { get; set; }
+
         public List<DestinationResponse> Destinations { get; set; }
     }
 
@@ -239,8 +247,12 @@ namespace StreamLoftApp.Services
         [JsonProperty("name")]
         public string Name { get; set; }
 
+        [JsonProperty("stream_key")]
         public string StreamKey { get; set; }
+
+        [JsonProperty("rtmp_url")]
         public string RtmpUrl { get; set; }
+
         public int? Bitrate { get; set; }
         public List<DestinationResponse> Destinations { get; set; }
     }
@@ -260,7 +272,10 @@ namespace StreamLoftApp.Services
 
     public class StreamStatusResponse
     {
+        [JsonProperty("status")]
         public string Status { get; set; }
+
+        [JsonProperty("bitrate_warning")]
         public bool BitrateWarning { get; set; }
     }
 

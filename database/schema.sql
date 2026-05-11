@@ -48,7 +48,8 @@ CREATE TABLE IF NOT EXISTS user_machines (
 );
 
 -- UserSessions table (per SRS 14.2 Data Dictionary - supports multiple devices per user)
--- Note: UNIQUE(user_id, machine_id) allows upsert for auto-login refresh
+-- Note: access_token and refresh_token stored as RAW (not encrypted) - verified via HMAC signature
+-- Only stream_key in user_destinations is encrypted (per SRS DR-001)
 CREATE TABLE IF NOT EXISTS user_sessions (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,

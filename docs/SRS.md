@@ -549,8 +549,8 @@ Use only if the system exposes or consumes APIs.
 | id | SERIAL | Yes | Primary key | Auto-increment |
 | user_id | INTEGER | Yes | Foreign key to User | Required |
 | machine_id | VARCHAR(255) | Yes | Machine identifier | Required |
-| access_token | VARCHAR(512) | Yes | Per-session access token | Encrypted |
-| refresh_token | VARCHAR(512) | Yes | Per-session refresh token | Encrypted |
+| access_token | TEXT | Yes | Per-session access token (JWT) | Plain - HMAC verified |
+| refresh_token | TEXT | Yes | Per-session refresh token | Plain - HMAC verified |
 | token_expires_at | TIMESTAMP | Yes | Token expiration time | After 3 days |
 | created_at | TIMESTAMP | Yes | Session start time | Auto |
 | updated_at | TIMESTAMP | Yes | Last activity timestamp | Auto |
@@ -565,6 +565,7 @@ Use only if the system exposes or consumes APIs.
 | DR-004 | User configured bitrate shall be stored for comparison |
 | DR-005 | Admin SQL files shall be stored in database/admin-sql/ folder |
 | DR-006 | Admin SQL files shall be version-controlled in Git |
+| DR-007 | Session tokens (access_token, refresh_token) stored as plain text (HMAC-verified, not encrypted) |
 | DR-007 | Database name shall be "StreamLoft" |
 | DR-008 | Database shall be hosted at 87.239.135.39:5432 |
 | DR-009 | Go API runtime configuration shall be stored outside the database |
