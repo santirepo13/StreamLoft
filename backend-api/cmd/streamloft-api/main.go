@@ -3,7 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -105,5 +109,38 @@ func main() {
 
 	addr := ":" + cfg.APIPort
 	l.Info().Str("addr", addr).Msg("server starting")
-	r.Run(addr)
+
+	// Set up signal handling for graceful shutdown
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	// Start the server in a goroutine
+	server := &http.Server{Addr: addr, Handler: r}
+	go func() {
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			l.Fatal().Err(err).Msg("server failed")
+		}
+	}()
+
+	l.Info().Msg("server started, waiting for shutdown signal")
+
+	// Wait for interrupt signal
+	<-sigChan
+	l.Info().Msg("received shutdown signal, gracefully shutting down...")
+
+	// Create a context with timeout for graceful shutdown
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	// Stop all workers gracefully
+	if err := workerSvc.StopAllWorkers(); err != nil {
+		l.Error().Err(err).Msg("failed to stop all workers")
+	}
+
+	// Shutdown the HTTP server
+	if err := server.Shutdown(ctx); err != nil {
+		l.Error().Err(err).Msg("server shutdown failed")
+	}
+
+	l.Info().Msg("server shutdown completed")
 }

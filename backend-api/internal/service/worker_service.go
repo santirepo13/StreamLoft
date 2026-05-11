@@ -65,6 +65,10 @@ func (s *WorkerService) StopAllForUser(ctx context.Context, userID int) error {
 	return s.forwardingMgr.StopAllForUser(ctx, userID)
 }
 
+func (s *WorkerService) StopAllWorkers() error {
+	return s.forwardingMgr.StopAllWorkers()
+}
+
 func (s *WorkerService) IsWorkerRunning(userID, userDestinationID int) bool {
 	return s.forwardingMgr.IsWorkerRunning(userID, userDestinationID)
 }
