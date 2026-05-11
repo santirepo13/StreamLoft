@@ -11,41 +11,24 @@ Thumbs.db
 .idea/
 *.iml
 
-# Windows metadata (NTFS)
+# Windows metadata (NTFS - remove these from repo)
 *:Zone.Identifier
-$*
-
-# Environment
-.env
-.env.local
-.env.*.local
 
 # Secrets / Keys
+.env
 *.key
 /key
 /keyfile
 /keys/
 *.pem
-secrets/
-credentials.json
 
 # Logs
 *.log
-/logs/
-*.pid
-
-# Builds
-/bin/
-/dist/
-/out/
-build/
-publish/
 
 # Temp
-/tmp/
-temp/
+/temp/
 *.tmp
-
+tmp/
 
 # =====================
 # Backend API (Go)
@@ -53,19 +36,12 @@ temp/
 backend-api/vendor/
 backend-api/bin/
 backend-api/tmp/
-*.exe
-.env
-
 
 # =====================
 # Windows App (.NET)
 # =====================
 windows-app/**/bin/
 windows-app/**/obj/
-windows-app/**/*.user
-windows-app/**/*.suo
-windows-app/**/*.user
-
 
 # =====================
 # Media Server (SRS)
@@ -74,10 +50,3 @@ media-server/objs/
 media-server/release/
 media-server/sbin/
 media-server/lib/
-media-server/test/
-media-server/ Research/
-media-server/gmocks/
-media-server/trunk/
-media-server/doc/_static/
-media-server/doc/_build/
-media-server/doc/gen/
