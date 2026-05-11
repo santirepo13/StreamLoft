@@ -3,8 +3,10 @@ package workers
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -13,14 +15,15 @@ import (
 )
 
 type ForwardingWorker struct {
-	process     *exec.Cmd
-	isRunning   bool
-	startTime   time.Time
-	restartCount int
+	process       *exec.Cmd
+	isRunning     bool
+	startTime     time.Time
+	restartCount  int
 	lastHealthCheck time.Time
-	streamKey      string
-	destinationURL string
-	lastError      error
+	streamKey        string
+	destinationURL   string
+	lastError        error
+	stderrBuf        *strings.Builder // Captures ffmpeg stderr
 }
 
 type ForwardingManager struct {
@@ -61,13 +64,21 @@ func (m *ForwardingManager) handleWorkerCrash(key string, userID, userDestinatio
 	}
 
 	worker.isRunning = false
-	
+
 	if err != nil {
-		log.Error().Int("user_id", userID).Int("destination_id", userDestinationID).Err(err).Msg("forwarding worker crashed")
-		
+		// Build error details including captured stderr from ffmpeg
+		errorFields := log.Error().Int("user_id", userID).Int("destination_id", userDestinationID).Err(err)
+		if worker.stderrBuf != nil {
+			stderr := worker.stderrBuf.String()
+			if stderr != "" {
+				errorFields = errorFields.Str("ffmpeg_stderr", stderr)
+			}
+		}
+		errorFields.Msg("forwarding worker crashed")
+
 		// Update worker error state
 		worker.lastError = err
-		
+
 		// Check if we should restart this worker
 		if worker.restartCount < 3 { // Max 3 restart attempts
 			worker.restartCount++
@@ -76,7 +87,7 @@ func (m *ForwardingManager) handleWorkerCrash(key string, userID, userDestinatio
 				Int("destination_id", userDestinationID).
 				Int("restart_count", worker.restartCount).
 				Msg("attempting to restart crashed worker")
-			
+
 			// Schedule restart after a delay (exponential backoff)
 			go m.scheduleWorkerRestart(key, userID, userDestinationID, worker.restartCount)
 		} else {
@@ -133,10 +144,22 @@ func (m *ForwardingManager) StartWorker(ctx context.Context, userID int, userDes
 	key := m.workerKey(userID, userDestinationID)
 
 	m.mu.Lock()
-	if m.workers[key] != nil && m.workers[key].isRunning {
-		m.mu.Unlock()
-		log.Info().Int("user_id", userID).Int("destination_id", userDestinationID).Msg("worker already running")
-		return nil
+	// Check if a worker entry exists and appears to be running
+	if w := m.workers[key]; w != nil && w.isRunning {
+		// Double-check if the process is actually still alive (avoid race condition)
+		if w.process != nil && w.process.Process != nil {
+			if err := w.process.Process.Signal(syscall.Signal(0)); err == nil {
+				// Process is alive, worker truly is running
+				m.mu.Unlock()
+				log.Info().Int("user_id", userID).Int("destination_id", userDestinationID).Msg("worker already running")
+				return nil
+			}
+			// Process dead, clean up stale entry
+			delete(m.workers, key)
+		} else {
+			// No valid process, clean up
+			delete(m.workers, key)
+		}
 	}
 
 	log.Info().
@@ -147,7 +170,9 @@ func (m *ForwardingManager) StartWorker(ctx context.Context, userID int, userDes
 
 	inputURL := fmt.Sprintf("%s/%s", m.srsURL, streamKey)
 
-	// Use independent command without HTTP context dependency
+	// Capture stderr to diagnose failures
+	stderrBuf := new(strings.Builder)
+
 	cmd := exec.Command(
 		"ffmpeg",
 		"-i", inputURL,
@@ -158,7 +183,7 @@ func (m *ForwardingManager) StartWorker(ctx context.Context, userID int, userDes
 	)
 
 	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	cmd.Stderr = io.MultiWriter(os.Stderr, stderrBuf)
 
 	if err := cmd.Start(); err != nil {
 		m.mu.Unlock()
@@ -166,13 +191,14 @@ func (m *ForwardingManager) StartWorker(ctx context.Context, userID int, userDes
 	}
 
 	worker := &ForwardingWorker{
-		process:     cmd,
-		isRunning:   true,
-		startTime:   time.Now(),
-		restartCount: 0,
+		process:        cmd,
+		isRunning:      true,
+		startTime:      time.Now(),
+		restartCount:   0,
 		lastHealthCheck: time.Now(),
-		streamKey:      streamKey,
-		destinationURL: destinationRTMPURL,
+		streamKey:       streamKey,
+		destinationURL:  destinationRTMPURL,
+		stderrBuf:       stderrBuf,
 	}
 
 	m.workers[key] = worker
@@ -358,17 +384,21 @@ func (m *ForwardingManager) GetWorkerStats() map[string]interface{} {
 		var userID, userDestinationID int
 		fmt.Sscanf(key, "%d-%d", &userID, &userDestinationID)
 		
-		workerInfo := map[string]interface{}{
-			"user_id":         userID,
-			"destination_id":  userDestinationID,
-			"is_running":      worker.isRunning,
-			"start_time":      worker.startTime,
-			"uptime":          time.Since(worker.startTime),
-			"restart_count":   worker.restartCount,
-			"last_health_check": worker.lastHealthCheck,
-			"stream_key":      worker.streamKey,
-			"destination_url": worker.destinationURL,
-			"last_error":      worker.lastError,
+	workerInfo := map[string]interface{}{
+		"user_id":          userID,
+		"destination_id":   userDestinationID,
+		"is_running":       worker.isRunning,
+		"start_time":       worker.startTime,
+		"uptime":           time.Since(worker.startTime),
+		"restart_count":    worker.restartCount,
+		"last_health_check": worker.lastHealthCheck,
+		"stream_key":       worker.streamKey,
+		"destination_url":  worker.destinationURL,
+		"last_error":       worker.lastError,
+	}
+
+		if worker.stderrBuf != nil {
+			workerInfo["ffmpeg_stderr"] = worker.stderrBuf.String()
 		}
 		
 		if worker.isRunning {
@@ -403,16 +433,20 @@ func (m *ForwardingManager) GetWorkerStatus(userID, userDestinationID int) (map[
 	}
 	
 	status := map[string]interface{}{
-		"user_id":         userID,
-		"destination_id":  userDestinationID,
-		"is_running":      worker.isRunning,
-		"start_time":      worker.startTime,
-		"uptime":          time.Since(worker.startTime),
-		"restart_count":   worker.restartCount,
+		"user_id":          userID,
+		"destination_id":   userDestinationID,
+		"is_running":       worker.isRunning,
+		"start_time":       worker.startTime,
+		"uptime":           time.Since(worker.startTime),
+		"restart_count":    worker.restartCount,
 		"last_health_check": worker.lastHealthCheck,
-		"stream_key":      worker.streamKey,
-		"destination_url": worker.destinationURL,
-		"last_error":      worker.lastError,
+		"stream_key":       worker.streamKey,
+		"destination_url":  worker.destinationURL,
+		"last_error":       worker.lastError,
+	}
+
+	if worker.stderrBuf != nil {
+		status["ffmpeg_stderr"] = worker.stderrBuf.String()
 	}
 	
 	return status, true
