@@ -1,0 +1,230 @@
+<Window x:Class="StreamLoftApp.Views.DashboardView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Dashboard - StreamLoft" Height="600" Width="800"
+        WindowStartupLocation="CenterScreen"
+        Background="#272757">
+    
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Header -->
+        <Grid Grid.Row="0" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            
+            <TextBlock Text="StreamLoft Dashboard" 
+                       FontSize="24" 
+                       FontWeight="Bold" 
+                       Foreground="#0F0E47"/>
+            
+            <!-- Logout Button -->
+            <Button Grid.Column="1" 
+                    Content="Logout" 
+                    Command="{Binding LogoutCommand}"
+                    Width="80" 
+                    Height="30"
+                    Background="#505081"
+                    Foreground="#FFFFFF"
+                    FontSize="12"
+                    Cursor="Hand"
+                    BorderThickness="0"/>
+        </Grid>
+        
+        <!-- Stream Info Panel -->
+        <Border Grid.Row="1" 
+                Background="#505081" 
+                CornerRadius="10" 
+                Padding="20"
+                Margin="0,0,0,20">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- RTMP URL -->
+                <StackPanel Grid.Column="0" Margin="0,0,15,0">
+                    <TextBlock Text="StreamLoft RTMP URL" 
+                               Foreground="#8686AC" 
+                               FontSize="12" 
+                               Margin="0,0,0,5"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Text="{Binding RtmpUrl, Mode=OneWay}"
+                                 IsReadOnly="True"
+                                 Background="#8686AC"
+                                 Foreground="#0F0E47"
+                                 Padding="8"
+                                 BorderThickness="0"/>
+                        <Button Grid.Column="1" 
+                                Content="Copy" 
+                                Command="{Binding CopyRtmpUrlCommand}"
+                                Width="60" 
+                                Margin="5,0,0,0"
+                                Background="#272757"
+                                Foreground="#FFFFFF"
+                                FontSize="11"
+                                Cursor="Hand"
+                                BorderThickness="0"/>
+                    </Grid>
+                </StackPanel>
+                
+                <!-- Stream Key -->
+                <StackPanel Grid.Column="1" Margin="15,0,15,0">
+                    <TextBlock Text="StreamLoft Stream Key" 
+                               Foreground="#8686AC" 
+                               FontSize="12" 
+                               Margin="0,0,0,5"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Text="{Binding StreamKey, Mode=OneWay}"
+                                 IsReadOnly="True"
+                                 Background="#8686AC"
+                                 Foreground="#0F0E47"
+                                 Padding="8"
+                                 BorderThickness="0"/>
+                        <Button Grid.Column="1" 
+                                Content="Copy" 
+                                Command="{Binding CopyStreamKeyCommand}"
+                                Width="60" 
+                                Margin="5,0,0,0"
+                                Background="#272757"
+                                Foreground="#FFFFFF"
+                                FontSize="11"
+                                Cursor="Hand"
+                                BorderThickness="0"/>
+                    </Grid>
+                </StackPanel>
+                
+                <!-- Status Indicator -->
+                <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                    <TextBlock Text="Status" 
+                               Foreground="#8686AC" 
+                               FontSize="12" 
+                               Margin="0,0,0,5"
+                               HorizontalAlignment="Center"/>
+                    <Border CornerRadius="15" 
+                            Padding="15,5"
+                            Background="{Binding IsLive, Converter={StaticResource LiveStatusBackgroundConverter}}">
+                        <TextBlock Text="{Binding StatusText}"
+                                   FontWeight="Bold"
+                                   FontSize="14"
+                                   Foreground="#0F0E47"/>
+                    </Border>
+                    <!-- Bitrate Warning -->
+                    <TextBlock Text="⚠ Low Bitrate"
+                               Foreground="#FFA500"
+                               FontSize="11"
+                               Margin="0,5,0,0"
+                               Visibility="{Binding BitrateWarning, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+        
+        <!-- Destinations Section -->
+        <Border Grid.Row="2" 
+                Background="#505081" 
+                CornerRadius="10" 
+                Padding="20">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                
+                <Grid Grid.Row="0" Margin="0,0,0,15">
+                    <TextBlock Text="Destinations" 
+                               FontSize="18" 
+                               FontWeight="Bold" 
+                               Foreground="#FFFFFF"/>
+                    
+                    <Button Content="View Events" 
+                            Command="{Binding EventsCommand}"
+                            HorizontalAlignment="Right"
+                            Width="100"
+                            Height="28"
+                            Background="#8686AC"
+                            Foreground="#0F0E47"
+                            FontSize="12"
+                            Cursor="Hand"
+                            BorderThickness="0"/>
+                </Grid>
+                
+                <!-- Destinations List -->
+                <ListBox Grid.Row="1" 
+                         ItemsSource="{Binding Destinations}"
+                         Background="Transparent"
+                         BorderThickness="0">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="#8686AC" 
+                                    CornerRadius="8" 
+                                    Padding="15"
+                                    Margin="0,5"
+                                    Cursor="Hand">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Name}" 
+                                                   FontWeight="Bold" 
+                                                   FontSize="14"
+                                                   Foreground="#0F0E47"/>
+                                        <TextBlock Text="{Binding RtmpUrl}" 
+                                                   FontSize="11"
+                                                   Foreground="#272757"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                    </StackPanel>
+                                    
+                                    <!-- Configured Indicator -->
+                                    <Border Grid.Column="1" 
+                                            CornerRadius="10"
+                                            Padding="10,5"
+                                            Background="{Binding Configured, Converter={StaticResource ConfiguredBackgroundConverter}}">
+                                        <TextBlock Text="{Binding Configured, Converter={StaticResource ConfiguredTextConverter}}"
+                                                   FontSize="11"
+                                                   Foreground="#0F0E47"/>
+                                    </Border>
+                                </Grid>
+                                
+                                <Border.InputBindings>
+                                    <MouseBinding MouseAction="LeftClick" 
+                                                  Command="{Binding DataContext.DestinationClickCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                                  CommandParameter="{Binding}"/>
+                                </Border.InputBindings>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+        </Border>
+        
+        <!-- Loading Indicator -->
+        <TextBlock Grid.Row="3" 
+                   Text="Loading..." 
+                   Foreground="#8686AC"
+                   FontSize="12"
+                   Margin="0,10,0,0"
+                   HorizontalAlignment="Center"
+                   Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"/>
+    </Grid>
+</Window>

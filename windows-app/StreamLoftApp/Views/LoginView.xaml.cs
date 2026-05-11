@@ -1,18 +1,43 @@
 ﻿using System.Windows;
+using StreamLoftApp.ViewModels;
 
 namespace StreamLoftApp.Views
 {
     public partial class LoginView : Window
     {
+        private readonly LoginViewModel _viewModel;
+
         public LoginView()
         {
             InitializeComponent();
+            
+            _viewModel = new LoginViewModel();
+            _viewModel.OnLoginSuccess += NavigateToWelcome;
+            _viewModel.OnLoginFailed += ShowError;
+            
+            DataContext = _viewModel;
+            
+            Loaded += async (s, e) => await TryAutoLogin();
         }
 
-        private void LoginButton_Click(object sender, RoutedEventArgs e)
+        private async System.Threading.Tasks.Task TryAutoLogin()
         {
-            // TODO: Implement login logic
-            MessageBox.Show("Login functionality to be implemented");
+            if (_viewModel.LoginCommand.CanExecute(null))
+            {
+                _viewModel.AutoLoginCommand.Execute(null);
+            }
+        }
+
+        private void NavigateToWelcome()
+        {
+            var welcomeWindow = new WelcomeView();
+            welcomeWindow.Show();
+            this.Close();
+        }
+
+        private void ShowError(string message)
+        {
+            // Error is displayed via binding
         }
     }
 }

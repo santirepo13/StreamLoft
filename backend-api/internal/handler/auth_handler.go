@@ -24,8 +24,8 @@ func NewAuthHandler(authService *service.AuthService, cfg *config.Config) *AuthH
 }
 
 type LoginRequest struct {
-	UserID    string `json:"user_id" binding:"required"`
-	MachineID string `json:"machine_id" binding:"required"`
+	NumericID  string `json:"numeric_id" binding:"required"`
+	MachineID  string `json:"machine_id" binding:"required"`
 }
 
 type LoginResponse struct {
@@ -58,7 +58,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	result, err := h.authService.Login(c.Request.Context(), req.UserID, req.MachineID)
+	result, err := h.authService.Login(c.Request.Context(), req.NumericID, req.MachineID)
 	if err != nil {
 		if err == service.ErrInvalidCredentials {
 			errors.RespondWithError(c, errors.Unauthorized("Invalid ID"))

@@ -420,6 +420,27 @@ Use only if the system has a user interface.
 | SCR-004 | Destination | Configure single destination | Destination name, stream key input, enable toggle | Input key, enable/disable, save |
 | SCR-005 | Events | View stream history | List of broadcast sessions with site, date, duration | View only |
 
+## 12.2 Color Palette
+
+The Windows app uses the following color palette for consistent styling:
+
+| Color Name | Hex Code | Usage |
+|------------|----------|-------|
+| Primary Dark | #272757 | Main background, headers |
+| Primary Light | #8686AC | Accents, secondary buttons |
+| Primary Medium | #505081 | Cards, containers |
+| Primary Darkest | #0F0E47 | Text, dark elements |
+
+Additional UI colors:
+
+| Element | Color | Hex |
+|---------|-------|-----|
+| Live status | Green | #00FF00 |
+| Offline status | Gray | #808080 |
+| Bitrate warning | Orange | #FFA500 |
+| Error | Red | #FF0000 |
+| Success | Green | #00FF00 |
+
 ---
 
 # 13. API Requirements
