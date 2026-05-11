@@ -19,6 +19,7 @@ namespace StreamLoftApp.ViewModels
         private bool _bitrateWarning;
         private bool _isLoading;
         private string _statusText;
+        private int? _configuredBitrate;
 
         public string RtmpUrl
         {
@@ -50,6 +51,12 @@ namespace StreamLoftApp.ViewModels
             set => SetProperty(ref _bitrateWarning, value);
         }
 
+        public int? ConfiguredBitrate
+        {
+            get => _configuredBitrate;
+            set => SetProperty(ref _configuredBitrate, value);
+        }
+
         public bool IsLoading
         {
             get => _isLoading;
@@ -69,6 +76,7 @@ namespace StreamLoftApp.ViewModels
         public ICommand DestinationClickCommand { get; }
         public ICommand LogoutCommand { get; }
         public ICommand EventsCommand { get; }
+        public ICommand UpdateBitrateCommand { get; }
 
         public event Action<DestinationItem> OnDestinationClick;
         public event Action OnEventsClick;
@@ -83,6 +91,7 @@ namespace StreamLoftApp.ViewModels
             DestinationClickCommand = new RelayCommand<DestinationItem>(OnDestination);
             LogoutCommand = new RelayCommand(async _ => await ExecuteLogoutAsync(), _ => !IsLoading);
             EventsCommand = new RelayCommand(_ => OnEventsClick?.Invoke(), _ => !IsLoading);
+            UpdateBitrateCommand = new RelayCommand(async _ => await UpdateBitrateAsync(), _ => !IsLoading);
 
             _statusTimer = new DispatcherTimer
             {
@@ -112,6 +121,7 @@ namespace StreamLoftApp.ViewModels
                 var user = await _apiService.GetUserAsync();
                 RtmpUrl = user.RtmpUrl ?? "";
                 StreamKey = user.StreamKey ?? "";
+                ConfiguredBitrate = user.Bitrate;
 
                 var destinations = await _apiService.GetDestinationsAsync();
                 Destinations.Clear();
@@ -191,6 +201,31 @@ namespace StreamLoftApp.ViewModels
             {
                 IsLoading = false;
                 OnLogout?.Invoke();
+            }
+        }
+
+        private async System.Threading.Tasks.Task UpdateBitrateAsync()
+        {
+            if (!ConfiguredBitrate.HasValue || ConfiguredBitrate.Value <= 0)
+            {
+                MessageBox.Show("Please enter a valid bitrate (positive number)", "Invalid Bitrate", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            IsLoading = true;
+
+            try
+            {
+                await _apiService.UpdateBitrateAsync(ConfiguredBitrate.Value);
+                MessageBox.Show($"Bitrate updated to {ConfiguredBitrate.Value} kbps", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to update bitrate: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsLoading = false;
             }
         }
     }

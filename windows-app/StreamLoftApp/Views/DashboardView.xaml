@@ -111,28 +111,65 @@
                     </Grid>
                 </StackPanel>
                 
-                <!-- Status Indicator -->
-                <StackPanel Grid.Column="2" HorizontalAlignment="Center">
-                    <TextBlock Text="Status" 
-                               Foreground="#8686AC" 
-                               FontSize="12" 
-                               Margin="0,0,0,5"
-                               HorizontalAlignment="Center"/>
-                    <Border CornerRadius="15" 
-                            Padding="15,5"
-                            Background="{Binding IsLive, Converter={StaticResource LiveStatusBackgroundConverter}}">
-                        <TextBlock Text="{Binding StatusText}"
-                                   FontWeight="Bold"
-                                   FontSize="14"
-                                   Foreground="#0F0E47"/>
-                    </Border>
-                    <!-- Bitrate Warning -->
-                    <TextBlock Text="⚠ Low Bitrate"
-                               Foreground="#FFA500"
-                               FontSize="11"
-                               Margin="0,5,0,0"
-                               Visibility="{Binding BitrateWarning, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                </StackPanel>
+                 <!-- Status Indicator -->
+                 <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                     <TextBlock Text="Status" 
+                                Foreground="#8686AC" 
+                                FontSize="12" 
+                                Margin="0,0,0,5"
+                                HorizontalAlignment="Center"/>
+                     <Border CornerRadius="15" 
+                             Padding="15,5"
+                             Background="{Binding IsLive, Converter={StaticResource LiveStatusBackgroundConverter}}">
+                         <TextBlock Text="{Binding StatusText}"
+                                    FontWeight="Bold"
+                                    FontSize="14"
+                                    Foreground="#0F0E47"/>
+                     </Border>
+                     <!-- Bitrate Warning -->
+                     <TextBlock Text="⚠ Low Bitrate"
+                                Foreground="#FFA500"
+                                FontSize="11"
+                                Margin="0,5,0,0"
+                                Visibility="{Binding BitrateWarning, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                 </StackPanel>
+                 
+                 <!-- Bitrate Setter -->
+                 <StackPanel Grid.Column="3" HorizontalAlignment="Right" Margin="15,0,0,0">
+                     <TextBlock Text="Upload Bitrate" 
+                                Foreground="#8686AC" 
+                                FontSize="12" 
+                                Margin="0,0,0,5"
+                                HorizontalAlignment="Center"/>
+                     <Grid>
+                         <Grid.ColumnDefinitions>
+                             <ColumnDefinition Width="80"/>
+                             <ColumnDefinition Width="Auto"/>
+                         </Grid.ColumnDefinitions>
+                         <TextBox Text="{Binding ConfiguredBitrate, Mode=TwoWay}"
+                                  HorizontalAlignment="Stretch"
+                                  Background="#8686AC"
+                                  Foreground="#0F0E47"
+                                  Padding="8"
+                                  BorderThickness="0"
+                                  VerticalContentAlignment="Center"/>
+                         <Button Grid.Column="1" 
+                                 Content="Set"
+                                 Command="{Binding UpdateBitrateCommand}"
+                                 Width="50" 
+                                 Margin="5,0,0,0"
+                                 Background="#272757"
+                                 Foreground="#FFFFFF"
+                                 FontSize="11"
+                                 Cursor="Hand"
+                                 BorderThickness="0"/>
+                     </Grid>
+                     <TextBlock Text="kbps" 
+                                Foreground="#8686AC" 
+                                FontSize="11" 
+                                Margin="0,2,0,0"
+                                HorizontalAlignment="Center"/>
+                 </StackPanel>
             </Grid>
         </Border>
         

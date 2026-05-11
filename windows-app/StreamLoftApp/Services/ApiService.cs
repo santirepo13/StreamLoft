@@ -134,7 +134,8 @@ namespace StreamLoftApp.Services
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<List<DestinationResponse>>(content);
+                var destinationsResponse = JsonConvert.DeserializeObject<DestinationsResponse>(content);
+                return destinationsResponse?.Destinations ?? new List<DestinationResponse>();
             }
             
             throw new Exception($"Failed to get destinations: {response.StatusCode}");
@@ -268,6 +269,12 @@ namespace StreamLoftApp.Services
         public string RtmpUrl { get; set; }
 
         public bool Configured { get; set; }
+    }
+
+    public class DestinationsResponse
+    {
+        [JsonProperty("destinations")]
+        public List<DestinationResponse> Destinations { get; set; }
     }
 
     public class StreamStatusResponse

@@ -20,6 +20,7 @@ type UserResponse struct {
 	Name        string                  `json:"name"`
 	RTMPURL     string                  `json:"rtmp_url"`
 	StreamKey   *string                  `json:"stream_key"`
+	Bitrate     *int                     `json:"bitrate"`
 	Destinations []DestinationResponse    `json:"destinations"`
 }
 
@@ -60,6 +61,7 @@ func (s *UserService) GetUser(ctx context.Context, userID int, rtmpURL string) (
 		Name:        user.Name,
 		RTMPURL:     rtmpURL,
 		StreamKey:   user.StreamKey,
+		Bitrate:     user.Bitrate,
 		Destinations: destResp,
 	}, nil
 }
