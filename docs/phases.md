@@ -62,12 +62,13 @@ Steps:
 
 2. Create `User` table.
 
-3. Add:
+3. Add (per SRS Section 14.2):
 
    * `id`
    * `numeric_id`
    * `name`
    * `stream_key`
+   * `bitrate` (INTEGER, nullable - user's configured upload speed in kbps, per DR-004)
    * `created_at`
    * `updated_at`
 
@@ -77,18 +78,18 @@ Steps:
 
 6. Create `UserDestination` table.
 
-7. Add:
+7. Add (per SRS - no enabled flag, stream_key presence enables):
 
    * `id`
-   * `user_id`
-   * `name`
-   * `rtmp_url`
-   * encrypted `stream_key`
-   * `enabled`
+   * `user_id` (FK to User)
+   * `destination_id` (FK to Destination)
+   * `stream_key` (TEXT, encrypted, NULL = disabled)
    * `created_at`
    * `updated_at`
 
-8. Add foreign key from `UserDestination.user_id` to `User.id`.
+8. Add foreign keys:
+   - `UserDestination.user_id` to `User.id`
+   - `UserDestination.destination_id` to `Destination.id`
 
 9. Create `BroadcastSession` table.
 
@@ -161,8 +162,6 @@ assign_destination.sql
 update_destination.sql
 edit_streamloft_stream_key.sql
 edit_destination_stream_key.sql
-disable_destination.sql
-delete_or_deactivate_user.sql
 list_users.sql
 list_user_destinations.sql
 list_broadcast_sessions.sql
@@ -237,8 +236,8 @@ The SRS defines runtime config locations:
 
 ```text
 backend-api/.env.example
-/etc/streamloft/api.env
-/etc/streamloft/streamloft_master.key
+/opt/StreamLoft/api.env
+/opt/StreamLoft/streamloft_master.key
 ```
 
 The Go runtime config must stay outside the database and must not be hardcoded. 
@@ -248,8 +247,8 @@ Steps:
 1. Create `backend-api/.env.example`.
 2. Include only variable names.
 3. Do not include real secrets.
-4. Load runtime variables from `/etc/streamloft/api.env`.
-5. Load encryption key from `/etc/streamloft/streamloft_master.key`.
+4. Load runtime variables from `/opt/StreamLoft/api.env`.
+5. Load encryption key from `/opt/StreamLoft/streamloft_master.key`.
 6. Ensure only the Go API process reads the encryption key.
 7. Fail startup if required runtime config is missing.
 8. Fail startup if encryption key file is missing.
@@ -328,9 +327,10 @@ Code:
 
 ```text
 GET /user
+PUT /user/bitrate
 ```
 
-Steps:
+Steps for `GET /user`:
 
 1. Require access token.
 2. Validate token.
@@ -342,8 +342,17 @@ Steps:
    * StreamLoft RTMP URL
    * StreamLoft stream key
    * allowed destinations
+   * configured bitrate (if set)
 5. Do not return full saved destination stream keys after they are saved.
 6. Return only allowed destinations for the current user.
+
+Steps for `PUT /user/bitrate` (per SRS API-012, FR-012):
+
+1. Require access token.
+2. Validate bitrate is positive integer (per VAL-007).
+3. Store in users.bitrate column.
+4. Return success with updated bitrate value.
+5. Used for bitrate warning comparison - if actual stream bitrate < (configured × 0.7), warning is triggered.
 
 ---
 
@@ -354,41 +363,33 @@ Code:
 ```text
 GET /destinations
 PUT /destinations/:id
-PUT /destinations/:id/toggle
 ```
+
+Per SRS BR-005 and Section 14.2: "Assignment IS the permission — no separate enabled/disabled flag"
+The presence of stream_key determines if destination is enabled.
 
 Steps for `GET /destinations`:
 
 1. Require access token.
 2. Resolve current user.
 3. Query only destinations assigned to that user.
-4. Return destination names, RTMP URLs, enabled state, and configured/not-configured status.
-5. Do not return full destination stream keys.
+4. Return destination names, RTMP URLs, configured/not-configured status (NOT enabled flag).
+5. Do not return full destination stream keys (SEC-013).
 
 Steps for `PUT /destinations/:id`:
 
 1. Require access token.
 2. Resolve current user.
 3. Validate destination belongs to current user.
-4. Validate stream key is non-empty and max 256 chars. 
-5. Encrypt destination stream key.
-6. Save encrypted stream key.
-7. Return saved status.
-8. Do not return the full stream key.
-
-Steps for `PUT /destinations/:id/toggle`:
-
-1. Require access token.
-2. Resolve current user.
-3. Validate destination belongs to current user.
-4. Validate destination has a configured stream key before enabling.
-5. Update enabled state.
-6. If user is live and destination is enabled, start only that destination worker.
-7. If user is live and destination is disabled, stop only that destination worker.
-8. Do not affect other destinations.
-9. Do not affect other users.
-
-Destination toggling must affect only the current user and not other users. 
+4. If stream_key provided (non-empty, max 256 chars):
+   - Encrypt destination stream key
+   - Save encrypted stream key (ENABLES destination)
+5. If stream_key is null/empty:
+   - Clear stream_key (DISABLES destination)
+6. Return saved status with configured flag.
+7. Do not return the full stream key.
+8. If user is live and stream_key was added, start forwarding worker for that destination (SRS-API-011).
+9. If user is live and stream_key was cleared, stop forwarding worker for that destination (SRS-API-012). 
 
 ---
 
@@ -404,15 +405,17 @@ GET /stream/status
 
 Steps for `POST /stream/start`:
 
-1. Accept SRS callback data.
-2. Identify user from StreamLoft stream key.
-3. Mark user stream as live.
-4. Detect bitrate if available.
-5. Compare actual bitrate to configured bitrate.
-6. Trigger warning if bitrate is below threshold.
-7. Query enabled destinations for user.
-8. Start one isolated forwarding worker per enabled destination.
-9. Create one broadcast session record per destination.
+1. Accept SRS callback data (includes stream_key and optionally detected bitrate).
+2. Identify user from StreamLoft stream key (query users table).
+3. Mark user stream as live (store in-memory per SRS, no database required).
+4. Get user's configured bitrate from users.bitrate column.
+5. If bitrate available in callback AND user has configured bitrate:
+   - Compare actual vs (configured × 0.7)
+   - If actual < (configured × 0.7), set bitrate_warning = true for this stream session
+6. Store bitrate_warning in-memory with stream status.
+7. Query destinations with stream_key set for user.
+8. Start one isolated forwarding worker per destination with stream_key.
+9. Create one broadcast session record per destination with started_at.
 10. Return callback success.
 
 Steps for `POST /stream/stop`:
@@ -430,12 +433,11 @@ Steps for `GET /stream/status`:
 
 1. Require access token.
 2. Resolve current user.
-3. Return:
+3. Check in-memory stream status (per SRS - live state not in database).
+4. Return:
 
-   * live
-   * offline
-   * unknown if connection/status cannot be confirmed
-   * bitrate warning status if active
+   * status: "live" | "offline" | "unknown"
+   * bitrate_warning: true if current stream's bitrate is below 30% of configured (per FR-012)
 
 SRS must notify the Go API through callbacks, and the Go API must manage forwarding independently per user destination. 
 
@@ -443,7 +445,7 @@ SRS must notify the Go API through callbacks, and the Go API must manage forward
 
 ## Phase 10 — Forwarding Worker Coding
 
-The SRS requires isolated forwarding workers per enabled destination. 
+The SRS requires isolated forwarding workers per destination with stream_key set. 
 
 Create worker logic in:
 
@@ -453,26 +455,27 @@ backend-api/internal/workers/
 
 Steps:
 
-1. Create worker manager.
+1. Create worker manager (interface WorkerManager).
 2. Track workers by:
 
    * user ID
    * user destination ID
 3. Start worker when:
 
-   * SRS sends stream start callback
-   * destination is enabled while user is already live
+   * SRS sends stream start callback (SRS-API-009)
+   * destination has stream_key set while user is already live (SRS-API-011)
 4. Stop worker when:
 
-   * SRS sends stream stop callback
-   * destination is disabled while user is live
-5. Decrypt destination stream key only inside Go API.
-6. Build external RTMP target from destination RTMP URL plus decrypted key.
-7. Start forwarding process.
-8. Log destination unreachable errors.
-9. Continue other destination workers if one fails.
-10. Never restart SRS for destination toggle changes.
-11. Never rewrite global SRS config as runtime control.
+   * SRS sends stream stop callback (SRS-API-010)
+   * destination stream_key is cleared while user is live (SRS-API-012)
+5. Ensure one worker's failure doesn't stop other workers for same user (SRS-API-007).
+6. Ensure one user's worker failures don't affect other users' workers (SRS-API-008).
+7. Decrypt destination stream key only inside Go API.
+8. Build external RTMP target from destination RTMP URL plus decrypted key.
+9. Start forwarding process (use ffmpeg or similar).
+10. Log destination unreachable errors, continue to other destinations.
+11. Never restart SRS for stream_key changes.
+12. Never rewrite global SRS config as runtime control.
 
 The stream forwarding flow must start workers on publish and stop them on unpublish. 
 
@@ -532,7 +535,7 @@ POST /stream/stop
 ```
 
 5. Do not configure global forwarding as runtime control.
-6. Do not require SRS restart when destination toggles change.
+6. Do not require SRS restart when stream_key changes.
 7. Leave runtime forwarding control to Go API workers.
 
 SRS configuration must include HTTP callbacks and must not use global forwarding as the runtime control mechanism. 
@@ -623,7 +626,7 @@ Steps for Dashboard screen:
 4. Add copy button for StreamLoft stream key.
 5. Show live/offline indicator.
 6. Show allowed destinations.
-7. Show destination enabled/disabled state.
+7. Show destination configured/not-configured state (stream_key set or not).
 8. Show bitrate warning when applicable.
 9. Add logout button.
 10. Poll or call `GET /stream/status`.
@@ -631,12 +634,10 @@ Steps for Dashboard screen:
 Steps for Destination screen:
 
 1. Show destination name.
-2. Show stream key input.
+2. Show stream key input (empty to disable, filled to enable).
 3. Hide saved stream key after save.
 4. Add save button.
-5. Add enable/disable toggle.
-6. Save calls `PUT /destinations/:id`.
-7. Toggle calls `PUT /destinations/:id/toggle`.
+5. Save calls `PUT /destinations/:id` - saves stream_key to enable, clears to disable.
 
 Steps for Events screen:
 
@@ -690,7 +691,7 @@ Steps:
 6. Store master encryption key only at:
 
 ```text
-/etc/streamloft/streamloft_master.key
+/opt/StreamLoft/streamloft_master.key
 ```
 
 7. Ensure Go API alone reads the encryption key.
@@ -767,7 +768,7 @@ TC-003 Welcome screen
 TC-004 StreamLoft stream key generation
 TC-005 Allowed destinations
 TC-006 Destination stream key save
-TC-007 Destination toggle
+TC-007 Destination stream_key configuration
 TC-008 Stream forwarding
 TC-009 SRS stream start callback
 TC-010 Live/offline status
@@ -809,11 +810,11 @@ Steps:
 10. Confirm admin SQL files are only in `database/admin-sql/`.
 11. Confirm no secrets are committed.
 12. Confirm destination stream keys are encrypted.
-13. Confirm destination toggle does not affect other users.
+13. Confirm destination stream_key changes do not affect other users.
 14. Confirm logout only affects current machine.
-15. Confirm SRS is not restarted for destination toggles.
+15. Confirm SRS is not restarted for stream_key changes.
 16. Confirm global SRS forwarding config is not rewritten for runtime control.
-17. Confirm each enabled destination uses an isolated forwarding worker.
+17. Confirm each destination with stream_key uses an isolated forwarding worker.
 18. Confirm one worker failure does not stop other destination workers.
 19. Confirm broadcast sessions are logged per destination.
 20. Confirm broadcast session cleanup respects 30-day retention.

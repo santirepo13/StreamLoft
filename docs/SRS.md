@@ -447,8 +447,9 @@ Use only if the system exposes or consumes APIs.
 | API-007 | PUT | /destinations/:id | Set or update stream key for destination; Go API starts forwarding if stream_key is present | FR-006, FR-007 |
 | API-008 | POST | /stream/start | Receive stream start notification from SRS, log session | FR-009, FR-011 |
 | API-009 | POST | /stream/stop | Receive stream stop notification from SRS, calculate duration, log session | FR-011 |
-| API-010 | GET | /stream/status | Return current stream status (live/offline) | FR-010 |
+| API-010 | GET | /stream/status | Return current stream status (live/offline) plus bitrate warning if below threshold | FR-010, FR-012 |
 | API-011 | GET | /broadcasts | Return broadcast sessions for user, grouped by site and date | FR-011 |
+| API-012 | PUT | /user/bitrate | Update user's configured upload bitrate for bitrate warning comparison | FR-012 |
 
 ---
 
@@ -475,6 +476,7 @@ Use only if the system exposes or consumes APIs.
 | numeric_id | VARCHAR(20) | Yes | User's login ID | Unique, numeric |
 | name | VARCHAR(100) | Yes | User's display name | Non-empty |
 | stream_key | VARCHAR(32) | Yes | StreamLoft stream key | Unique, generated |
+| bitrate | INTEGER | No | User's configured upload bitrate (kbps) | Positive integer per VAL-007 |
 | created_at | TIMESTAMP | Yes | Creation timestamp | Auto |
 | updated_at | TIMESTAMP | Yes | Last update timestamp | Auto |
 
@@ -546,7 +548,7 @@ Use only if the system exposes or consumes APIs.
 | DR-008 | Database shall be hosted at 87.239.135.39:5432 |
 | DR-009 | Go API runtime configuration shall be stored outside the database |
 | DR-010 | Go API runtime configuration shall not be hardcoded in source code |
-| DR-011 | The destination stream key encryption key shall be stored in /etc/streamloft/streamloft_master.key on the API VPS |
+| DR-011 | The destination stream key encryption key shall be stored in /opt/StreamLoft/streamloft_master.key on the API VPS |
 | DR-012 | The destination stream key encryption key shall not be stored in backend-api/.env, appsettings.json, the database, Git, SRS config, or the Windows app |
 
 ## 14.4 Data Integrity Rules
@@ -589,7 +591,6 @@ Use only when checking legal, institutional, rubric, security, privacy, or techn
 | ID | Compliance Rule | Required System Behavior | Evidence Needed |
 | --- | --- | --- | --- |
 | COMP-001 | Streaming platform terms | Users must comply with YouTube/Twitch/FB terms | Documentation |
-| COMP-002 | Data retention | Broadcast session data retained max 30 days | Cleanup job |
 
 ---
 
@@ -626,8 +627,8 @@ Use only when checking legal, institutional, rubric, security, privacy, or techn
 | ID | Component | Config File/Location | Contents |
 | --- | --- | --- | --- |
 | CONFIG-001 | Go API | backend-api/.env.example | Example variable names only, no real secrets |
-| CONFIG-002 | Go API runtime | /etc/streamloft/api.env | Database connection, server port, SRS callback settings |
-| CONFIG-003 | Go API encryption | /etc/streamloft/streamloft_master.key | Destination stream key encryption key |
+| CONFIG-002 | Go API runtime | /opt/StreamLoft/api.env | Database connection, server port, SRS callback settings |
+| CONFIG-003 | Go API encryption | /opt/StreamLoft/streamloft_master.key | Destination stream key encryption key |
 | CONFIG-004 | C# Windows App | windows-app/appsettings.json | API base URL only |
 | CONFIG-005 | C# Windows App publish | Output folder | appsettings.json shall be copied beside .exe during publish |
 | CONFIG-006 | SRS | media-server/srs.conf | RTMP port, HTTP callbacks to Go API |
