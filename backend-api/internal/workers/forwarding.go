@@ -168,7 +168,7 @@ func (m *ForwardingManager) StartWorker(ctx context.Context, userID int, userDes
 		Str("destination", destinationRTMPURL).
 		Msg("starting forwarding worker")
 
-	inputURL := fmt.Sprintf("%s/live/%s.flv", m.srsURL, streamKey)
+	inputURL := fmt.Sprintf("%s/%s.flv", m.srsURL, streamKey)
 
 	// Capture stderr to diagnose failures
 	stderrBuf := new(strings.Builder)
