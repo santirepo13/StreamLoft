@@ -29,8 +29,9 @@ func NewStreamHandler(streamSvc *service.StreamService, userSvc *service.UserSer
 }
 
 type StreamStartRequest struct {
-	StreamKey     string `json:"stream_key"`
-	DetectedBitrate int  `json:"detected_bitrate"`
+	StreamKey       string `json:"stream_key"`
+	Stream           string `json:"stream"`
+	DetectedBitrate int    `json:"detected_bitrate"`
 }
 
 type UpdateBitrateRequest struct {
@@ -49,6 +50,9 @@ func (h *StreamHandler) Start(c *gin.Context) {
 	if err := c.ShouldBindJSON(&req); err == nil {
 		if streamKey == "" && req.StreamKey != "" {
 			streamKey = req.StreamKey
+		}
+		if streamKey == "" && req.Stream != "" {
+			streamKey = req.Stream
 		}
 		if req.DetectedBitrate > 0 {
 			detectedBitrate = req.DetectedBitrate
@@ -84,6 +88,9 @@ func (h *StreamHandler) Stop(c *gin.Context) {
 	if err := c.ShouldBindJSON(&req); err == nil {
 		if streamKey == "" && req.StreamKey != "" {
 			streamKey = req.StreamKey
+		}
+		if streamKey == "" && req.Stream != "" {
+			streamKey = req.Stream
 		}
 	}
 
