@@ -213,10 +213,14 @@ namespace StreamLoftApp.Services
     // Response models
     public class LoginResponse
     {
+        [JsonProperty("numeric_id")]
+        public string NumericId { get; set; }
+
+        [JsonProperty("name")]
+        public string Name { get; set; }
+
         public string AccessToken { get; set; }
         public string RefreshToken { get; set; }
-        public string Name { get; set; }
-        public string NumericId { get; set; }
         public string StreamKey { get; set; }
         public string RtmpUrl { get; set; }
         public List<DestinationResponse> Destinations { get; set; }
@@ -229,8 +233,12 @@ namespace StreamLoftApp.Services
 
     public class UserResponse
     {
-        public string Name { get; set; }
+        [JsonProperty("numeric_id")]
         public string NumericId { get; set; }
+
+        [JsonProperty("name")]
+        public string Name { get; set; }
+
         public string StreamKey { get; set; }
         public string RtmpUrl { get; set; }
         public int? Bitrate { get; set; }
@@ -240,8 +248,13 @@ namespace StreamLoftApp.Services
     public class DestinationResponse
     {
         public int Id { get; set; }
+
+        [JsonProperty("name")]
         public string Name { get; set; }
+
+        [JsonProperty("rtmp_url")]
         public string RtmpUrl { get; set; }
+
         public bool Configured { get; set; }
     }
 
@@ -254,7 +267,10 @@ namespace StreamLoftApp.Services
     public class BroadcastResponse
     {
         public int Id { get; set; }
+
+        [JsonProperty("destination_name")]
         public string DestinationName { get; set; }
+
         public string Date { get; set; }
         public string StartedAt { get; set; }
         public string EndedAt { get; set; }

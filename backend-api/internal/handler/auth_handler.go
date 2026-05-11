@@ -29,12 +29,13 @@ type LoginRequest struct {
 }
 
 type LoginResponse struct {
-	User          *UserResponse        `json:"user"`
-	RTMPURL       string                `json:"rtmp_url"`
-	StreamKey     *string               `json:"stream_key"`
-	AccessToken   string                `json:"access_token"`
-	RefreshToken  string                `json:"refresh_token"`
-	Destinations  []DestinationResponse `json:"destinations"`
+	NumericID    string                `json:"numeric_id"`
+	Name        string                `json:"name"`
+	RTMPURL     string                `json:"rtmp_url"`
+	StreamKey   *string              `json:"stream_key"`
+	AccessToken string                `json:"access_token"`
+	RefreshToken string              `json:"refresh_token"`
+	Destinations []DestinationResponse `json:"destinations"`
 }
 
 type UserResponse struct {
@@ -80,14 +81,11 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, LoginResponse{
-		User: &UserResponse{
-			ID:        result.User.ID,
-			NumericID: result.User.NumericID,
-			Name:      result.User.Name,
-		},
-		RTMPURL:      h.cfg.RTMPURL,
-		StreamKey:    result.User.StreamKey,
-		AccessToken:  result.AccessToken,
+		NumericID:   result.User.NumericID,
+		Name:        result.User.Name,
+		RTMPURL:     h.cfg.RTMPURL,
+		StreamKey:   result.User.StreamKey,
+		AccessToken: result.AccessToken,
 		RefreshToken: result.RefreshToken,
 		Destinations: destinations,
 	})
