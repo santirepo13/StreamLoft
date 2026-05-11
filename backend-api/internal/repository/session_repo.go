@@ -24,6 +24,11 @@ func (r *SessionRepository) Create(ctx context.Context, userID int, machineID, a
 	query := `
 		INSERT INTO user_sessions (user_id, machine_id, access_token, refresh_token, token_expires_at)
 		VALUES ($1, $2, $3, $4, $5)
+		ON CONFLICT (user_id, machine_id) 
+		DO UPDATE SET access_token = EXCLUDED.access_token, 
+					refresh_token = EXCLUDED.refresh_token,
+					token_expires_at = EXCLUDED.token_expires_at,
+					updated_at = NOW()
 		RETURNING id, user_id, machine_id, token_expires_at, created_at, updated_at
 	`
 
@@ -40,7 +45,7 @@ func (r *SessionRepository) Create(ctx context.Context, userID int, machineID, a
 		return nil, fmt.Errorf("failed to create session: %w", err)
 	}
 
-	log.Info().Int("user_id", userID).Str("machine_id", machineID).Msg("session created")
+	log.Info().Int("user_id", userID).Str("machine_id", machineID).Msg("session upserted")
 	return &session, nil
 }
 

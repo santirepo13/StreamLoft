@@ -1,11 +1,13 @@
 -- StreamLoft Database Schema
 -- PostgreSQL
+-- Per SRS.MD requirements
 
+-- Users table (per SRS 14.2 Data Dictionary - User Table)
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     numeric_id VARCHAR(20) NOT NULL UNIQUE,
     name VARCHAR(100) NOT NULL,
-    stream_key VARCHAR(32) UNIQUE,
+    stream_key VARCHAR(32) NOT NULL,  -- SRS: Required, generated on first login
     bitrate INTEGER,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
@@ -22,7 +24,7 @@ CREATE TABLE IF NOT EXISTS user_destinations (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     destination_id INTEGER NOT NULL REFERENCES destinations(id) ON DELETE CASCADE,
-    stream_key TEXT,
+    stream_key TEXT,  -- SRS BR-004: Stored encrypted
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     UNIQUE (user_id, destination_id)
@@ -45,6 +47,8 @@ CREATE TABLE IF NOT EXISTS user_machines (
     last_used_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
+-- UserSessions table (per SRS 14.2 Data Dictionary - supports multiple devices per user)
+-- Note: UNIQUE(user_id, machine_id) allows upsert for auto-login refresh
 CREATE TABLE IF NOT EXISTS user_sessions (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
