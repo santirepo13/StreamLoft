@@ -74,7 +74,7 @@ func (h *StreamHandler) Start(c *gin.Context) {
 	}
 
 	log.Printf("STREAM_HANDLER_SUCCESS: Stream processing completed successfully")
-	c.JSON(http.StatusOK, gin.H{"status": "started"})
+	c.JSON(http.StatusOK, gin.H{"code": 0})
 }
 
 func (h *StreamHandler) Stop(c *gin.Context) {
@@ -109,7 +109,7 @@ func (h *StreamHandler) Stop(c *gin.Context) {
 	}
 
 	log.Printf("STREAM_HANDLER_SUCCESS: Stream stop processing completed successfully")
-	c.JSON(http.StatusOK, gin.H{"status": "stopped"})
+	c.JSON(http.StatusOK, gin.H{"code": 0})
 }
 
 func (h *StreamHandler) Status(c *gin.Context) {
