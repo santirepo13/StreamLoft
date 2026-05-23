@@ -21,7 +21,7 @@ func NewUserRepository(db *pgxpool.Pool) *UserRepository {
 
 func (r *UserRepository) GetByNumericID(ctx context.Context, numericID string) (*models.User, error) {
 	query := `
-		SELECT id, numeric_id, name, stream_key, created_at, updated_at
+		SELECT id, numeric_id, name, stream_key, bitrate, created_at, updated_at
 		FROM users
 		WHERE numeric_id = $1
 	`
@@ -32,6 +32,7 @@ func (r *UserRepository) GetByNumericID(ctx context.Context, numericID string) (
 		&user.NumericID,
 		&user.Name,
 		&user.StreamKey,
+		&user.Bitrate,
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
@@ -47,7 +48,7 @@ func (r *UserRepository) GetByNumericID(ctx context.Context, numericID string) (
 
 func (r *UserRepository) GetByID(ctx context.Context, id int) (*models.User, error) {
 	query := `
-		SELECT id, numeric_id, name, stream_key, created_at, updated_at
+		SELECT id, numeric_id, name, stream_key, bitrate, created_at, updated_at
 		FROM users
 		WHERE id = $1
 	`
@@ -58,6 +59,7 @@ func (r *UserRepository) GetByID(ctx context.Context, id int) (*models.User, err
 		&user.NumericID,
 		&user.Name,
 		&user.StreamKey,
+		&user.Bitrate,
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
@@ -75,7 +77,7 @@ func (r *UserRepository) Create(ctx context.Context, numericID, name, streamKey 
 	query := `
 		INSERT INTO users (numeric_id, name, stream_key)
 		VALUES ($1, $2, $3)
-		RETURNING id, numeric_id, name, stream_key, created_at, updated_at
+		RETURNING id, numeric_id, name, stream_key, bitrate, created_at, updated_at
 	`
 
 	var user models.User
@@ -84,6 +86,7 @@ func (r *UserRepository) Create(ctx context.Context, numericID, name, streamKey 
 		&user.NumericID,
 		&user.Name,
 		&user.StreamKey,
+		&user.Bitrate,
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)

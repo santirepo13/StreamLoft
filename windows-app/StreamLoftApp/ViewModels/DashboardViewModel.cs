@@ -186,7 +186,7 @@ namespace StreamLoftApp.ViewModels
                 var user = await _apiService.GetUserAsync();
                 RtmpUrl = user.RtmpUrl ?? "";
                 StreamKey = user.StreamKey ?? "";
-                ConfiguredBitrate = App.Current.Properties["Bitrate"] as int? ?? user.Bitrate;
+                ConfiguredBitrate = user.Bitrate;
 
                 var destinations = await _apiService.GetDestinationsAsync();
                 Destinations.Clear();
