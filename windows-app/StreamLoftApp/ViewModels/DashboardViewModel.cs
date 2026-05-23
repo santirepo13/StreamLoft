@@ -1,8 +1,9 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Threading;
 using StreamLoftApp.Models;
 using StreamLoftApp.Services;
 
@@ -11,7 +12,8 @@ namespace StreamLoftApp.ViewModels
     public class DashboardViewModel : ViewModelBase
     {
         private readonly ApiService _apiService;
-        private DispatcherTimer _statusTimer;
+        private CancellationTokenSource _sseCts;
+        private Task _sseTask;
 
         private string _rtmpUrl;
         private string _streamKey;
@@ -93,23 +95,39 @@ namespace StreamLoftApp.ViewModels
             EventsCommand = new RelayCommand(_ => OnEventsClick?.Invoke(), _ => !IsLoading);
             UpdateBitrateCommand = new RelayCommand(async _ => await UpdateBitrateAsync(), _ => !IsLoading);
 
-            _statusTimer = new DispatcherTimer
-            {
-                Interval = TimeSpan.FromSeconds(3)
-            };
-            _statusTimer.Tick += async (s, e) => await RefreshStatusAsync();
-
             LoadDataAsync();
         }
 
-        public void StartPolling()
+        public void StartSSE()
         {
-            _statusTimer.Start();
+            _sseCts = new CancellationTokenSource();
+            _sseTask = Task.Run(async () => await SubscribeToStreamEvents(_sseCts.Token));
         }
 
-        public void StopPolling()
+        public void StopSSE()
         {
-            _statusTimer.Stop();
+            _sseCts?.Cancel();
+        }
+
+        private async System.Threading.Tasks.Task SubscribeToStreamEvents(CancellationToken ct)
+        {
+            try
+            {
+                await foreach (var evt in _apiService.SubscribeStreamEventsAsync(ct))
+                {
+                    Application.Current?.Dispatcher.Invoke(() =>
+                    {
+                        IsLive = evt.Status?.ToLower() == "live";
+                        BitrateWarning = evt.BitrateWarning;
+                    });
+                }
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception)
+            {
+            }
         }
 
         private async void LoadDataAsync()
@@ -146,7 +164,7 @@ namespace StreamLoftApp.ViewModels
             finally
             {
                 IsLoading = false;
-                StartPolling();
+                StartSSE();
             }
         }
 
@@ -187,7 +205,7 @@ namespace StreamLoftApp.ViewModels
 
         private async System.Threading.Tasks.Task ExecuteLogoutAsync()
         {
-            StopPolling();
+            StopSSE();
             IsLoading = true;
 
             try

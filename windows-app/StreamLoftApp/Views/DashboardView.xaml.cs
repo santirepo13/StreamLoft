@@ -18,7 +18,7 @@ namespace StreamLoftApp.Views
             
             DataContext = _viewModel;
             
-            Closing += (s, e) => _viewModel.StopPolling();
+            Closing += (s, e) => _viewModel.StopSSE();
         }
 
         private void NavigateToDestination(DestinationItem destination)
@@ -27,7 +27,7 @@ namespace StreamLoftApp.Views
             destWindow.ShowDialog();
             
             // Refresh data after returning
-            _viewModel.StartPolling();
+            _viewModel.StartSSE();
         }
 
         private void NavigateToEvents()

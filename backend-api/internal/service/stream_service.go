@@ -17,11 +17,18 @@ type LiveStreamStatus struct {
 	StartTime      time.Time
 }
 
+type StreamEvent struct {
+	Type           string `json:"type"`
+	Status         string `json:"status"`
+	BitrateWarning bool   `json:"bitrate_warning"`
+}
+
 type StreamService struct {
-	userRepo     interfaces.UserRepository
-	broadcastRepo interfaces.BroadcastSessionRepository
-	workerSvc    interfaces.WorkerManager
-	liveUsers    sync.Map
+	userRepo       interfaces.UserRepository
+	broadcastRepo  interfaces.BroadcastSessionRepository
+	workerSvc      interfaces.WorkerManager
+	liveUsers      sync.Map
+	subscribers    sync.Map
 }
 
 func NewStreamService(
@@ -79,6 +86,8 @@ func (s *StreamService) StartStream(ctx context.Context, streamKey string, detec
 		StartTime:      time.Now(),
 	})
 
+	s.Notify(user.ID, StreamEvent{Type: "start", Status: "live", BitrateWarning: bitrateWarning})
+
 	log.Printf("STREAM_CALLBACK_USER_LIVE: Marked user %d as live with stream_key=%s, bitrate_warning=%t", 
 		user.ID, streamKey, bitrateWarning)
 
@@ -130,6 +139,7 @@ func (s *StreamService) StopStream(ctx context.Context, streamKey string) error 
 	log.Printf("STREAM_STOP_SUCCESS: Found user_id=%d for stream_key=%s", user.ID, streamKey)
 
 	s.liveUsers.Delete(streamKey)
+	s.Notify(user.ID, StreamEvent{Type: "stop", Status: "offline", BitrateWarning: false})
 	log.Printf("STREAM_STOP_USER_LIVE: Removed user %d from live streams", user.ID)
 
 	s.workerSvc.StopAllForUser(ctx, user.ID)
@@ -206,4 +216,25 @@ func (s *StreamService) GetLiveStatusForUser(userID int) *LiveStreamStatus {
 		return true
 	})
 	return status
+}
+
+func (s *StreamService) Subscribe(userID int) chan StreamEvent {
+	ch := make(chan StreamEvent, 64)
+	s.subscribers.Store(userID, ch)
+	return ch
+}
+
+func (s *StreamService) Unsubscribe(userID int) {
+	if ch, ok := s.subscribers.LoadAndDelete(userID); ok {
+		close(ch.(chan StreamEvent))
+	}
+}
+
+func (s *StreamService) Notify(userID int, event StreamEvent) {
+	if ch, ok := s.subscribers.Load(userID); ok {
+		select {
+		case ch.(chan StreamEvent) <- event:
+		default:
+		}
+	}
 }

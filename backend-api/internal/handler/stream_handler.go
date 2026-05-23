@@ -1,6 +1,9 @@
 package handler
 
 import (
+	"encoding/json"
+	"fmt"
+	"io"
 	"log"
 	"net/http"
 
@@ -152,4 +155,34 @@ func (h *StreamHandler) UpdateBitrate(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"bitrate": req.Bitrate})
+}
+
+func (h *StreamHandler) Events(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	if userID == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	c.Header("Content-Type", "text/event-stream")
+	c.Header("Cache-Control", "no-cache")
+	c.Header("Connection", "keep-alive")
+	c.Header("X-Accel-Buffering", "no")
+
+	ch := h.streamService.Subscribe(userID)
+	defer h.streamService.Unsubscribe(userID)
+
+	c.Stream(func(w io.Writer) bool {
+		select {
+		case event, ok := <-ch:
+			if !ok {
+				return false
+			}
+			data, _ := json.Marshal(event)
+			fmt.Fprintf(w, "data: %s\n\n", data)
+			return true
+		case <-c.Request.Context().Done():
+			return false
+		}
+	})
 }

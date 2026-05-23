@@ -79,6 +79,7 @@ This section is mandatory for LLM review.
 | Refresh Token | Technical term | Long-lived credential used to request a new access token without requiring user re-authentication | Stored per session per machine |
 | Forwarding Worker | Technical term | Independent process to forward to one destination | Managed by Go API, one per enabled destination |
 | UTC-5 | Technical term | Timezone for all timestamps | Used for broadcast session times |
+| SSE | Protocol | Server-Sent Events | HTTP-based mechanism for server-to-client push; client subscribes, server pushes events without polling |
 
 ---
 
@@ -164,7 +165,7 @@ Include this because the LLM needs to understand requirement force.
 | FR-007 | The system shall forward to a destination only if a user_destination row exists for that user and destination | User | User opens destination config | Destination ID | Go API checks user_destination row exists with stream_key set; starts forwarding worker | Destination forwarded | No row or no stream_key → log error, don't forward | Toggle affects only current user's destination, no impact on other users | BR-005 | TC-007 |
 | FR-008 | The system shall forward incoming RTMP stream to all enabled destinations | Go API | Stream pushed to StreamLoft RTMP, Go API receives callback | RTMP stream | Go API starts isolated forwarding workers that read user's incoming SRS stream and push to each enabled destination | Stream appears on external platforms | Destination unreachable → log error, continue to others | All enabled destinations receive stream | BR-005 | TC-008 |
 | FR-009 | The system shall detect incoming stream and notify API | SRS | Stream starts | Stream metadata via HTTP callback | SRS calls API on_publish callback with stream info | API receives notification, logs session | API unreachable → log locally | API aware of active stream | BR-006 | TC-009 |
-| FR-010 | The system shall display live/offline status in Windows app | User | App polls API or receives push notification | Stream status | Show indicator in dashboard | Live/Offline status displayed | Connection error → show unknown | User sees current stream status | BR-006 | TC-010 |
+| FR-010 | The system shall push live/offline status updates to Windows app via Server-Sent Events (SSE) | User | Stream starts/stops from SRS callback | Stream status event | Go API pushes SSE event to subscribed client, dashboard updates instantly | SSE unavailable → fall back to polling, show unknown | User sees stream status with zero latency | BR-006 | TC-010 |
 | FR-011 | The system shall log stream start/stop events with division per site and session times | Go API | Stream start/stop from SRS callbacks | Timestamps, user ID, user_destination_id | Create/update broadcast session record per destination | Session logged with date, duration in minutes | Database error → log locally | Events queryable per site with duration | BR-007 | TC-011 |
 | FR-012 | The system shall detect upload bitrate and warn when below 30% of configured speed | System | Incoming stream | Actual bitrate, user configured speed | Compare actual to (configured × 0.7), warn if below | Show warning in Windows app, log warning | Detection fails → log and continue | Warning shown when upload < 30% below configured | BR-008 | TC-012 |
 | FR-013 | The system shall allow logout from current machine only | User | User clicks logout button | User ID, machine ID | End session for current machine only | Logout successful, show login screen | Error → show error | User logged out, other sessions unaffected | BR-009 | TC-013 |
@@ -298,11 +299,13 @@ Include this because the LLM needs to understand requirement force.
 | 5 | | Go API starts forwarding workers for all of the user's destinations that have a stream_key set |
 | 6 | | Go API logs session start for each destination with stream_key |
 | 7 | | Forward to all destinations with stream_key set via Go API workers |
-| 8 | | Update Windows app with "Live" status |
+| 8 | | SSE pushes "live" status to Windows app, dashboard updates instantly |
 | 9 | User stops streaming | |
 | 10 | | SRS sends on_unpublish callback to Go API |
 | 11 | | Go API stops forwarding workers, logs session end, calculates duration |
-| 12 | | Update Windows app to "Offline" status |
+| 12 | | SSE pushes "offline" status to Windows app, dashboard updates instantly |
+
+Note: Windows app maintains a persistent SSE connection to receive push events on stream start/stop. Go API pushes status to all subscribed clients when stream lifecycle changes occur. If SSE connection is lost, app falls back to polling. SSE eliminates continuous polling requests.
 
 ---
 
@@ -451,7 +454,7 @@ Use only if the system exposes or consumes APIs.
 
 | Field | Value |
 | --- | --- |
-| Endpoint ID | API-001 through API-010 |
+| Endpoint ID | API-001 through API-013 |
 | Authentication Required | Yes (token-based for user endpoints), No for stream events from SRS |
 | Related Requirements | FR-001 through FR-014 |
 
@@ -468,9 +471,10 @@ Use only if the system exposes or consumes APIs.
 | API-007 | PUT | /destinations/:id | Set or update stream key for destination; Go API starts forwarding if stream_key is present | FR-006, FR-007 |
 | API-008 | POST | /stream/start | Receive stream start notification from SRS, log session | FR-009, FR-011 |
 | API-009 | POST | /stream/stop | Receive stream stop notification from SRS, calculate duration, log session | FR-011 |
-| API-010 | GET | /stream/status | Return current stream status (live/offline) plus bitrate warning if below threshold | FR-010, FR-012 |
+| API-010 | GET | /stream/status | Return current stream status (live/offline) plus bitrate warning if below threshold (fallback if SSE unavailable) | FR-010, FR-012 |
 | API-011 | GET | /broadcasts | Return broadcast sessions for user, grouped by site and date | FR-011 |
 | API-012 | PUT | /user/bitrate | Update user's configured upload bitrate for bitrate warning comparison | FR-012 |
+| API-013 | GET | /user/stream/events | SSE endpoint — client subscribes, Go API pushes stream status events (type: "start"|"stop", status: "live"|"offline", bitrate_warning: bool) on stream lifecycle | FR-010, FR-012 |
 
 ---
 
@@ -681,6 +685,7 @@ Use only when checking legal, institutional, rubric, security, privacy, or techn
 | SRS-API-010 | When SRS sends an on_unpublish callback, the Go API shall mark the stream as offline and stop forwarding workers for that user's active destinations |
 | SRS-API-011 | When a user enables a destination while already live, the Go API shall start only that destination's forwarding worker |
 | SRS-API-012 | When a user disables a destination while already live, the Go API shall stop only that destination's forwarding worker |
+| SRS-API-013 | Go API shall push stream status events to subscribed Windows app clients via SSE when stream starts or stops |
 
 ---
 
@@ -718,7 +723,7 @@ This section has been moved to **docs/LLM_RULES.md**
 | FR-007 | Integration | TC-007 |
 | FR-008 | Integration | TC-008 |
 | FR-009 | Integration | TC-009 |
-| FR-010 | UI | TC-010 |
+| FR-010 | UI | TC-010 (API-013, SSE push) |
 | FR-011 | Functional | TC-011 |
 | FR-012 | Integration | TC-012 |
 | FR-013 | Functional | TC-013 |
@@ -743,7 +748,7 @@ This section has been moved to **docs/LLM_RULES.md**
 | FR-007 | BR-005 | API-006, SRS config | TC-007 | Pending |
 | FR-008 | BR-005 | SRS forwarding | TC-008 | Pending |
 | FR-009 | BR-006 | API-007, Stream events | TC-009 | Pending |
-| FR-010 | BR-006 | API-009, Dashboard | TC-010 | Pending |
+| FR-010 | BR-006 | API-010, API-013, Dashboard, SSE events | TC-010 | Pending |
 | FR-011 | BR-007 | BroadcastSession table | TC-011 | Pending |
 | FR-012 | BR-008 | Bitrate detection | TC-012 | Pending |
 | FR-013 | BR-009 | API-002, Logout | TC-013 | Pending |
@@ -763,6 +768,7 @@ This section has been moved to **docs/LLM_RULES.md**
 | ACC-006 | User logout shall only affect current machine session |
 | ACC-007 | Destination toggle shall not affect other users' streams |
 | ACC-008 | Stream sessions shall be logged per site with duration |
+| ACC-009 | Stream status changes shall be pushed to Windows app via SSE with zero polling lag |
 
 ---
 

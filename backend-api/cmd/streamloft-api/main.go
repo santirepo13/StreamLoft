@@ -92,6 +92,7 @@ func main() {
 		userGroup.GET("", userHdlr.GetUser)
 		userGroup.PUT("/bitrate", streamHdlr.UpdateBitrate)
 		userGroup.GET("/stream/status", streamHdlr.Status)
+		userGroup.GET("/stream/events", streamHdlr.Events)
 	}
 
 	destGroup := r.Group("/destinations")

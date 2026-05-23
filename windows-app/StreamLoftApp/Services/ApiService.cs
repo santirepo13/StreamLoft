@@ -199,6 +199,35 @@ namespace StreamLoftApp.Services
             }
         }
 
+        public async IAsyncEnumerable<StreamEvent> SubscribeStreamEventsAsync(
+            [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+        {
+            SetAuthHeader();
+
+            using var request = new HttpRequestMessage(HttpMethod.Get, "/user/stream/events");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
+
+            using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
+            response.EnsureSuccessStatusCode();
+
+            using var stream = await response.Content.ReadAsStreamAsync(ct);
+            using var reader = new System.IO.StreamReader(stream);
+
+            while (!reader.EndOfStream && !ct.IsCancellationRequested)
+            {
+                var line = await reader.ReadLineAsync(ct);
+                if (line == null) break;
+
+                if (line.StartsWith("data: "))
+                {
+                    var json = line.Substring(6);
+                    var evt = JsonConvert.DeserializeObject<StreamEvent>(json);
+                    if (evt != null)
+                        yield return evt;
+                }
+            }
+        }
+
         public void ClearToken()
         {
             _accessToken = null;
@@ -282,6 +311,18 @@ namespace StreamLoftApp.Services
 
     public class StreamStatusResponse
     {
+        [JsonProperty("status")]
+        public string Status { get; set; }
+
+        [JsonProperty("bitrate_warning")]
+        public bool BitrateWarning { get; set; }
+    }
+
+    public class StreamEvent
+    {
+        [JsonProperty("type")]
+        public string Type { get; set; }
+
         [JsonProperty("status")]
         public string Status { get; set; }
 
