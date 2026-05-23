@@ -20,7 +20,7 @@ namespace StreamLoftApp.ViewModels
         private bool _isLive;
         private bool _bitrateWarning;
         private bool _isLoading;
-        private string _statusText;
+        private string _statusText = "Offline";
         private int? _configuredBitrate;
 
         public string RtmpUrl
@@ -131,11 +131,26 @@ namespace StreamLoftApp.ViewModels
                 }
                 catch
                 {
-                    // SSE connection dropped — retry after delay
+                    // SSE disconnected — fall back to polling
                 }
 
                 if (!ct.IsCancellationRequested)
                 {
+                    // Poll status while waiting to retry SSE
+                    try
+                    {
+                        var status = await _apiService.GetStreamStatusAsync();
+                        Application.Current?.Dispatcher.Invoke(() =>
+                        {
+                            IsLive = status.Status?.ToLower() == "live";
+                            BitrateWarning = status.BitrateWarning;
+                        });
+                    }
+                    catch
+                    {
+                        // Ignore polling errors
+                    }
+
                     try
                     {
                         await System.Threading.Tasks.Task.Delay(5000, ct);

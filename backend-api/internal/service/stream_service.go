@@ -79,6 +79,16 @@ func (s *StreamService) StartStream(ctx context.Context, streamKey string, detec
 		}
 	}
 
+	// Clean up any stale live status for this user (missed on_unpublish)
+	s.liveUsers.Range(func(key, value interface{}) bool {
+		ls := value.(LiveStreamStatus)
+		if ls.UserID == user.ID {
+			s.liveUsers.Delete(key)
+			log.Printf("STREAM_CALLBACK_CLEANUP: Removed stale live entry for user %d", user.ID)
+		}
+		return true
+	})
+
 	s.liveUsers.Store(streamKey, LiveStreamStatus{
 		UserID:         user.ID,
 		StreamKey:      streamKey,
@@ -98,7 +108,23 @@ func (s *StreamService) StartStream(ctx context.Context, streamKey string, detec
 	}
 
 	log.Printf("STREAM_CALLBACK_DESTINATIONS: Found %d destinations with stream keys for user %d", len(destinations), user.ID)
-	
+
+	// Close any stale active sessions before creating new ones (missed on_unpublish)
+	activeSessions, err := s.broadcastRepo.GetActiveByUserID(ctx, user.ID)
+	if err != nil {
+		log.Printf("STREAM_CALLBACK_WARNING: Failed to get active sessions for cleanup: %v", err)
+	} else {
+		now := time.Now()
+		for _, session := range activeSessions {
+			duration := int(now.Sub(session.StartedAt).Minutes())
+			if err := s.broadcastRepo.UpdateEndTime(ctx, session.ID, now, duration); err != nil {
+				log.Printf("STREAM_CALLBACK_WARNING: Failed to close stale session %d: %v", session.ID, err)
+			} else {
+				log.Printf("STREAM_CALLBACK_CLEANUP: Closed stale session %d with duration %d minutes", session.ID, duration)
+			}
+		}
+	}
+
 	for _, dest := range destinations {
 		_, err := s.broadcastRepo.Create(ctx, user.ID, dest.ID)
 		if err != nil {

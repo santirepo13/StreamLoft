@@ -165,7 +165,7 @@ Include this because the LLM needs to understand requirement force.
 | FR-007 | The system shall forward to a destination only if a user_destination row exists for that user and destination | User | User opens destination config | Destination ID | Go API checks user_destination row exists with stream_key set; starts forwarding worker | Destination forwarded | No row or no stream_key → log error, don't forward | Toggle affects only current user's destination, no impact on other users | BR-005 | TC-007 |
 | FR-008 | The system shall forward incoming RTMP stream to all enabled destinations | Go API | Stream pushed to StreamLoft RTMP, Go API receives callback | RTMP stream | Go API starts isolated forwarding workers that read user's incoming SRS stream and push to each enabled destination | Stream appears on external platforms | Destination unreachable → log error, continue to others | All enabled destinations receive stream | BR-005 | TC-008 |
 | FR-009 | The system shall detect incoming stream and notify API | SRS | Stream starts | Stream metadata via HTTP callback | SRS calls API on_publish callback with stream info | API receives notification, logs session | API unreachable → log locally | API aware of active stream | BR-006 | TC-009 |
-| FR-010 | The system shall push live/offline status updates to Windows app via Server-Sent Events (SSE) | User | Stream starts/stops from SRS callback | Stream status event | Go API pushes SSE event to subscribed client, dashboard updates instantly | SSE unavailable → fall back to polling, show unknown | User sees stream status with zero latency | BR-006 | TC-010 |
+| FR-010 | The system shall push live/offline status updates to Windows app via Server-Sent Events (SSE) | User | Stream starts/stops from SRS callback | Stream status event | Go API pushes SSE event to subscribed client, dashboard updates instantly | SSE unavailable → fall back to polling (5s interval), show unknown | User sees stream status with zero latency | BR-006 | TC-010 |
 | FR-011 | The system shall log stream start/stop events with division per site and session times | Go API | Stream start/stop from SRS callbacks | Timestamps, user ID, user_destination_id | Create/update broadcast session record per destination | Session logged with date, duration in minutes | Database error → log locally | Events queryable per site with duration | BR-007 | TC-011 |
 | FR-012 | The system shall detect upload bitrate and warn when below 30% of configured speed | System | Incoming stream | Actual bitrate, user configured speed | Compare actual to (configured × 0.7), warn if below | Show warning in Windows app, log warning | Detection fails → log and continue | Warning shown when upload < 30% below configured | BR-008 | TC-012 |
 | FR-013 | The system shall allow logout from current machine only | User | User clicks logout button | User ID, machine ID | End session for current machine only | Logout successful, show login screen | Error → show error | User logged out, other sessions unaffected | BR-009 | TC-013 |
@@ -410,7 +410,7 @@ Use only if the system has a user interface.
 | UI-006 | The system shall display bitrate warning when below threshold | Dashboard | Warning shown when upload < 30% below configured |
 | UI-007 | The system shall display destinations with stream key input and status | Destination List | Each destination shows name, stream key field, and active/inactive status |
 | UI-008 | The system shall allow input of stream keys for allowed destinations | Destination Detail | Input field accepts key, save button works |
-| UI-009 | The system shall display stream events per site with duration | Dashboard / Events | Events listed with site name, date, duration in minutes |
+| UI-009 | The system shall display stream event totals per site per day | Events | Events listed with site name, date, total duration in minutes (prior days only) |
 | UI-010 | The system shall display logout button on dashboard | Dashboard | User can logout from current machine only |
 
 ## 12.1 Screen Definitions
@@ -421,7 +421,7 @@ Use only if the system has a user interface.
 | SCR-002 | Welcome | Show logged in user info | User name, ID | Proceed to dashboard, logout |
 | SCR-003 | Dashboard | Main control center | StreamLoft URL, stream key, live status, destination list, logout button | View, toggle destinations, input keys, logout |
 | SCR-004 | Destination | Configure single destination | Destination name, stream key input, enable toggle | Input key, enable/disable, save |
-| SCR-005 | Events | View stream history | List of broadcast sessions with site, date, duration | View only |
+| SCR-005 | Events | View stream history from prior days | List of broadcast session totals per site per day with site, date, total duration | View only |
 
 ## 12.2 Color Palette
 
@@ -471,8 +471,8 @@ Use only if the system exposes or consumes APIs.
 | API-007 | PUT | /destinations/:id | Set or update stream key for destination; Go API starts forwarding if stream_key is present | FR-006, FR-007 |
 | API-008 | POST | /stream/start | Receive stream start notification from SRS, log session | FR-009, FR-011 |
 | API-009 | POST | /stream/stop | Receive stream stop notification from SRS, calculate duration, log session | FR-011 |
-| API-010 | GET | /stream/status | Return current stream status (live/offline) plus bitrate warning if below threshold (fallback if SSE unavailable) | FR-010, FR-012 |
-| API-011 | GET | /broadcasts | Return broadcast sessions for user, grouped by site and date | FR-011 |
+| API-010 | GET | /stream/status | Return current stream status (live/offline) plus bitrate warning if below threshold (fallback if SSE unavailable, polls at 5s interval) | FR-010, FR-012 |
+| API-011 | GET | /broadcasts | Return broadcast session totals per site per day for prior days only, grouped by site with total duration in minutes | FR-011 |
 | API-012 | PUT | /user/bitrate | Update user's configured upload bitrate for bitrate warning comparison | FR-012 |
 | API-013 | GET | /user/stream/events | SSE endpoint — client subscribes, Go API pushes stream status events (type: "start"|"stop", status: "live"|"offline", bitrate_warning: bool) on stream lifecycle | FR-010, FR-012 |
 

@@ -31,34 +31,42 @@ func NewBroadcastService(broadcastRepo interfaces.BroadcastSessionRepository) *B
 	}
 }
 
-type BroadcastResponse struct {
-	ID                int        `json:"id"`
-	DestinationName   string     `json:"destination_name"`
-	Date              string     `json:"date"`
-	StartedAt         string     `json:"started_at"`
-	EndedAt           *string    `json:"ended_at,omitempty"`
-	DurationMinutes  int        `json:"duration_minutes"`
+type BroadcastGroupResponse struct {
+	DestinationName string `json:"destination_name"`
+	Date            string `json:"date"`
+	TotalMinutes    int    `json:"total_minutes"`
 }
 
-func (s *BroadcastService) GetBroadcasts(ctx context.Context, userID int) ([]BroadcastResponse, error) {
+func (s *BroadcastService) GetBroadcasts(ctx context.Context, userID int) ([]BroadcastGroupResponse, error) {
 	sessions, err := s.broadcastRepo.GetByUserIDWithDestination(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	result := make([]BroadcastResponse, len(sessions))
-	for i, session := range sessions {
-		result[i] = BroadcastResponse{
-			ID:               session.ID,
-			DestinationName:  session.DestinationName,
-			Date:             toEst(session.Date).Format("2006-01-02"),
-			StartedAt:        toEst(session.StartedAt).Format("2006-01-02T15:04:05-07:00"),
-			DurationMinutes:  session.DurationMinutes,
+	today := toEst(time.Now()).Format("2006-01-02")
+	groups := make(map[string]*BroadcastGroupResponse)
+
+	for _, session := range sessions {
+		dateStr := toEst(session.Date).Format("2006-01-02")
+		if dateStr == today {
+			continue
 		}
-		if session.EndedAt != nil {
-			endedAt := toEst(*session.EndedAt).Format("2006-01-02T15:04:05-07:00")
-			result[i].EndedAt = &endedAt
+
+		key := session.DestinationName + "|" + dateStr
+		if g, ok := groups[key]; ok {
+			g.TotalMinutes += session.DurationMinutes
+		} else {
+			groups[key] = &BroadcastGroupResponse{
+				DestinationName: session.DestinationName,
+				Date:            dateStr,
+				TotalMinutes:    session.DurationMinutes,
+			}
 		}
+	}
+
+	result := make([]BroadcastGroupResponse, 0, len(groups))
+	for _, g := range groups {
+		result = append(result, *g)
 	}
 
 	return result, nil

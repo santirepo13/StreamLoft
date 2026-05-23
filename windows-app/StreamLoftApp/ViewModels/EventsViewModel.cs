@@ -17,7 +17,7 @@ namespace StreamLoftApp.ViewModels
             set => SetProperty(ref _isLoading, value);
         }
 
-        public ObservableCollection<BroadcastItem> Broadcasts { get; } = new ObservableCollection<BroadcastItem>();
+        public ObservableCollection<BroadcastGroupItem> Broadcasts { get; } = new ObservableCollection<BroadcastGroupItem>();
 
         public ICommand RefreshCommand { get; }
         public ICommand BackCommand { get; }
@@ -45,14 +45,11 @@ namespace StreamLoftApp.ViewModels
                 Broadcasts.Clear();
                 foreach (var b in broadcasts)
                 {
-                    Broadcasts.Add(new BroadcastItem
+                    Broadcasts.Add(new BroadcastGroupItem
                     {
-                        Id = b.Id,
                         DestinationName = b.DestinationName,
                         Date = b.Date,
-                        StartedAt = b.StartedAt,
-                        EndedAt = b.EndedAt,
-                        DurationMinutes = b.DurationMinutes
+                        DurationText = $"{b.TotalMinutes} min"
                     });
                 }
             }
@@ -67,17 +64,10 @@ namespace StreamLoftApp.ViewModels
         }
     }
 
-    public class BroadcastItem
+    public class BroadcastGroupItem
     {
-        public int Id { get; set; }
         public string DestinationName { get; set; }
         public string Date { get; set; }
-        public string StartedAt { get; set; }
-        public string EndedAt { get; set; }
-        public int DurationMinutes { get; set; }
-
-        public string DurationText => DurationMinutes > 0 
-            ? $"{DurationMinutes} min" 
-            : "In progress";
+        public string DurationText { get; set; }
     }
 }

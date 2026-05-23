@@ -170,7 +170,7 @@ namespace StreamLoftApp.Services
             throw new Exception($"Failed to get stream status: {response.StatusCode}");
         }
 
-        public async Task<List<BroadcastResponse>> GetBroadcastsAsync()
+        public async Task<List<BroadcastGroupResponse>> GetBroadcastsAsync()
         {
             SetAuthHeader();
             
@@ -179,7 +179,7 @@ namespace StreamLoftApp.Services
             {
                 var content = await response.Content.ReadAsStringAsync();
                 var wrapper = JsonConvert.DeserializeObject<BroadcastsResponse>(content);
-                return wrapper?.Broadcasts ?? new List<BroadcastResponse>();
+                return wrapper?.Broadcasts ?? new List<BroadcastGroupResponse>();
             }
             
             throw new Exception($"Failed to get broadcasts: {response.StatusCode}");
@@ -262,6 +262,9 @@ namespace StreamLoftApp.Services
         [JsonProperty("rtmp_url")]
         public string RtmpUrl { get; set; }
 
+        [JsonProperty("bitrate")]
+        public int? Bitrate { get; set; }
+
         public List<DestinationResponse> Destinations { get; set; }
     }
 
@@ -314,7 +317,7 @@ namespace StreamLoftApp.Services
     public class BroadcastsResponse
     {
         [JsonProperty("broadcasts")]
-        public List<BroadcastResponse> Broadcasts { get; set; }
+        public List<BroadcastGroupResponse> Broadcasts { get; set; }
     }
 
     public class StreamStatusResponse
@@ -338,16 +341,14 @@ namespace StreamLoftApp.Services
         public bool BitrateWarning { get; set; }
     }
 
-    public class BroadcastResponse
+    public class BroadcastGroupResponse
     {
-        public int Id { get; set; }
-
         [JsonProperty("destination_name")]
         public string DestinationName { get; set; }
 
         public string Date { get; set; }
-        public string StartedAt { get; set; }
-        public string EndedAt { get; set; }
-        public int DurationMinutes { get; set; }
+
+        [JsonProperty("total_minutes")]
+        public int TotalMinutes { get; set; }
     }
 }

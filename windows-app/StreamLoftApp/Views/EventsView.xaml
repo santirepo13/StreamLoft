@@ -73,15 +73,10 @@
                                                FontWeight="Bold" 
                                                FontSize="14"
                                                Foreground="#0F0E47"/>
-                                    <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                                        <TextBlock Text="{Binding Date}" 
-                                                   FontSize="12"
-                                                   Foreground="#272757"/>
-                                        <TextBlock Text=" • " Foreground="#272757" FontSize="12"/>
-                                        <TextBlock Text="{Binding StartedAt}" 
-                                                   FontSize="12"
-                                                   Foreground="#272757"/>
-                                    </StackPanel>
+                                    <TextBlock Text="{Binding Date}" 
+                                               FontSize="12"
+                                               Foreground="#272757"
+                                               Margin="0,5,0,0"/>
                                 </StackPanel>
                                 
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">

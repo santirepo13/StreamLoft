@@ -30,11 +30,12 @@ type LoginRequest struct {
 
 type LoginResponse struct {
 	NumericID    string                `json:"numeric_id"`
-	Name        string                `json:"name"`
-	RTMPURL     string                `json:"rtmp_url"`
-	StreamKey   *string              `json:"stream_key"`
-	AccessToken string                `json:"access_token"`
-	RefreshToken string              `json:"refresh_token"`
+	Name         string                `json:"name"`
+	RTMPURL      string                `json:"rtmp_url"`
+	StreamKey    *string               `json:"stream_key"`
+	Bitrate      *int                  `json:"bitrate"`
+	AccessToken  string                `json:"access_token"`
+	RefreshToken string                `json:"refresh_token"`
 	Destinations []DestinationResponse `json:"destinations"`
 }
 
@@ -81,11 +82,12 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, LoginResponse{
-		NumericID:   result.User.NumericID,
-		Name:        result.User.Name,
-		RTMPURL:     h.cfg.RTMPURL,
-		StreamKey:   result.User.StreamKey,
-		AccessToken: result.AccessToken,
+		NumericID:    result.User.NumericID,
+		Name:         result.User.Name,
+		RTMPURL:      h.cfg.RTMPURL,
+		StreamKey:    result.User.StreamKey,
+		Bitrate:      result.User.Bitrate,
+		AccessToken:  result.AccessToken,
 		RefreshToken: result.RefreshToken,
 		Destinations: destinations,
 	})
