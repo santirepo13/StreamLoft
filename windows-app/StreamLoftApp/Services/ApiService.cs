@@ -178,7 +178,8 @@ namespace StreamLoftApp.Services
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<List<BroadcastResponse>>(content);
+                var wrapper = JsonConvert.DeserializeObject<BroadcastsResponse>(content);
+                return wrapper?.Broadcasts ?? new List<BroadcastResponse>();
             }
             
             throw new Exception($"Failed to get broadcasts: {response.StatusCode}");
@@ -283,6 +284,7 @@ namespace StreamLoftApp.Services
         [JsonProperty("rtmp_url")]
         public string RtmpUrl { get; set; }
 
+        [JsonProperty("bitrate")]
         public int? Bitrate { get; set; }
         public List<DestinationResponse> Destinations { get; set; }
     }
@@ -307,6 +309,12 @@ namespace StreamLoftApp.Services
     {
         [JsonProperty("destinations")]
         public List<DestinationResponse> Destinations { get; set; }
+    }
+
+    public class BroadcastsResponse
+    {
+        [JsonProperty("broadcasts")]
+        public List<BroadcastResponse> Broadcasts { get; set; }
     }
 
     public class StreamStatusResponse

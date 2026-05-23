@@ -100,6 +100,7 @@ namespace StreamLoftApp.ViewModels
 
         public void StartSSE()
         {
+            StopSSE();
             _sseCts = new CancellationTokenSource();
             _sseTask = Task.Run(async () => await SubscribeToStreamEvents(_sseCts.Token));
         }
@@ -111,22 +112,39 @@ namespace StreamLoftApp.ViewModels
 
         private async System.Threading.Tasks.Task SubscribeToStreamEvents(CancellationToken ct)
         {
-            try
+            while (!ct.IsCancellationRequested)
             {
-                await foreach (var evt in _apiService.SubscribeStreamEventsAsync(ct))
+                try
                 {
-                    Application.Current?.Dispatcher.Invoke(() =>
+                    await foreach (var evt in _apiService.SubscribeStreamEventsAsync(ct))
                     {
-                        IsLive = evt.Status?.ToLower() == "live";
-                        BitrateWarning = evt.BitrateWarning;
-                    });
+                        Application.Current?.Dispatcher.Invoke(() =>
+                        {
+                            IsLive = evt.Status?.ToLower() == "live";
+                            BitrateWarning = evt.BitrateWarning;
+                        });
+                    }
                 }
-            }
-            catch (OperationCanceledException)
-            {
-            }
-            catch (Exception)
-            {
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+                catch
+                {
+                    // SSE connection dropped — retry after delay
+                }
+
+                if (!ct.IsCancellationRequested)
+                {
+                    try
+                    {
+                        await System.Threading.Tasks.Task.Delay(5000, ct);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        break;
+                    }
+                }
             }
         }
 

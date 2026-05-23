@@ -202,7 +202,7 @@ this one is sketchy because sometimes i run this cmd and it creates a 34 bit one
 
 Prerequisites on the Windows machine:
 
-- .NET 10 Runtime or .NET 10 SDK
+- .NET 9 Runtime or .NET 9 SDK
 - Windows 10 or later
 
 Build from source:

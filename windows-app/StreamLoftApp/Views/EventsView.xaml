@@ -1,7 +1,7 @@
 <Window x:Class="StreamLoftApp.Views.EventsView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Broadcast Events - StreamLoft" Height="500" Width="600"
+        Title="Broadcast Events - StreamLoft" Height="800" Width="960"
         WindowStartupLocation="CenterScreen"
         Background="#272757">
     
