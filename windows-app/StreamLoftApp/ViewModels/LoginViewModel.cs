@@ -78,6 +78,7 @@ namespace StreamLoftApp.ViewModels
                 App.Current.Properties["NumericId"] = response.NumericId;
                 App.Current.Properties["RtmpUrl"] = response.RtmpUrl;
                 App.Current.Properties["StreamKey"] = response.StreamKey;
+                App.Current.Properties["Bitrate"] = response.Bitrate;
 
                 OnLoginSuccess?.Invoke();
             }
@@ -110,6 +111,7 @@ namespace StreamLoftApp.ViewModels
                 App.Current.Properties["NumericId"] = user.NumericId;
                 App.Current.Properties["RtmpUrl"] = user.RtmpUrl;
                 App.Current.Properties["StreamKey"] = user.StreamKey;
+                App.Current.Properties["Bitrate"] = user.Bitrate;
 
                 OnLoginSuccess?.Invoke();
             }

@@ -43,8 +43,22 @@ namespace StreamLoftApp.ViewModels
                 if (SetProperty(ref _isLive, value))
                 {
                     StatusText = value ? "Live" : "Offline";
+                    UpdateDestinationsActiveStatus();
                 }
             }
+        }
+
+        private void UpdateDestinationsActiveStatus()
+        {
+            foreach (var dest in Destinations)
+            {
+                dest.IsActive = dest.Configured && IsLive;
+            }
+            // Force ObservableCollection refresh
+            var items = Destinations.ToList();
+            Destinations.Clear();
+            foreach (var item in items)
+                Destinations.Add(item);
         }
 
         public bool BitrateWarning
@@ -172,7 +186,7 @@ namespace StreamLoftApp.ViewModels
                 var user = await _apiService.GetUserAsync();
                 RtmpUrl = user.RtmpUrl ?? "";
                 StreamKey = user.StreamKey ?? "";
-                ConfiguredBitrate = user.Bitrate;
+                ConfiguredBitrate = App.Current.Properties["Bitrate"] as int? ?? user.Bitrate;
 
                 var destinations = await _apiService.GetDestinationsAsync();
                 Destinations.Clear();
@@ -184,7 +198,8 @@ namespace StreamLoftApp.ViewModels
                         Name = dest.Name,
                         RtmpUrl = dest.RtmpUrl,
                         Configured = dest.Configured,
-                        StreamKey = dest.StreamKey ?? ""
+                        StreamKey = dest.StreamKey ?? "",
+                        IsActive = dest.Configured && IsLive
                     });
                 }
 
@@ -288,6 +303,7 @@ namespace StreamLoftApp.ViewModels
         public string Name { get; set; }
         public string RtmpUrl { get; set; }
         public bool Configured { get; set; }
+        public bool IsActive { get; set; }
         public string StreamKey { get; set; }
     }
 }

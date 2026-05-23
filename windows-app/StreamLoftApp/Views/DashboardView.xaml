@@ -237,8 +237,8 @@
                                     <Border Grid.Column="1" 
                                             CornerRadius="10"
                                             Padding="10,5"
-                                            Background="{Binding Configured, Converter={StaticResource ConfiguredBackgroundConverter}}">
-                                        <TextBlock Text="{Binding Configured, Converter={StaticResource ConfiguredTextConverter}}"
+                                            Background="{Binding IsActive, Converter={StaticResource ConfiguredBackgroundConverter}}">
+                                        <TextBlock Text="{Binding IsActive, Converter={StaticResource ConfiguredTextConverter}}"
                                                    FontSize="11"
                                                    Foreground="#0F0E47"/>
                                     </Border>
