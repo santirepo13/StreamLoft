@@ -52,7 +52,7 @@ namespace StreamLoftApp.ViewModels
         {
             foreach (var dest in Destinations)
             {
-                dest.IsActive = dest.Configured && IsLive;
+                dest.IsActive = dest.Enabled == 1 && dest.Configured && IsLive;
             }
             // Force ObservableCollection refresh
             var items = Destinations.ToList();
@@ -90,6 +90,7 @@ namespace StreamLoftApp.ViewModels
         public ICommand CopyRtmpUrlCommand { get; }
         public ICommand CopyStreamKeyCommand { get; }
         public ICommand DestinationClickCommand { get; }
+        public ICommand DestinationBadgeCommand { get; }
         public ICommand LogoutCommand { get; }
         public ICommand EventsCommand { get; }
         public ICommand UpdateBitrateCommand { get; }
@@ -105,6 +106,7 @@ namespace StreamLoftApp.ViewModels
             CopyRtmpUrlCommand = new RelayCommand(CopyRtmpUrl);
             CopyStreamKeyCommand = new RelayCommand(CopyStreamKey);
             DestinationClickCommand = new RelayCommand<DestinationItem>(OnDestination);
+            DestinationBadgeCommand = new RelayCommand<DestinationItem>(OnDestinationBadge);
             LogoutCommand = new RelayCommand(async _ => await ExecuteLogoutAsync(), _ => !IsLoading);
             EventsCommand = new RelayCommand(_ => OnEventsClick?.Invoke(), _ => !IsLoading);
             UpdateBitrateCommand = new RelayCommand(async _ => await UpdateBitrateAsync(), _ => !IsLoading);
@@ -198,8 +200,9 @@ namespace StreamLoftApp.ViewModels
                         Name = dest.Name,
                         RtmpUrl = dest.RtmpUrl,
                         Configured = dest.Configured,
+                        Enabled = dest.Enabled,
                         StreamKey = dest.StreamKey ?? "",
-                        IsActive = dest.Configured && IsLive
+                        IsActive = dest.Enabled == 1 && dest.Configured && IsLive
                     });
                 }
 
@@ -249,6 +252,29 @@ namespace StreamLoftApp.ViewModels
         private void OnDestination(DestinationItem destination)
         {
             OnDestinationClick?.Invoke(destination);
+        }
+
+        private async void OnDestinationBadge(DestinationItem destination)
+        {
+            // If not configured, open config window
+            if (!destination.Configured)
+            {
+                OnDestinationClick?.Invoke(destination);
+                return;
+            }
+
+            // Toggle enabled state
+            try
+            {
+                int newEnabled = destination.Enabled == 1 ? 0 : 1;
+                await _apiService.ToggleDestinationAsync(destination.Id, newEnabled);
+                destination.Enabled = newEnabled;
+                UpdateDestinationsActiveStatus();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to toggle destination: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private async System.Threading.Tasks.Task ExecuteLogoutAsync()
@@ -303,6 +329,7 @@ namespace StreamLoftApp.ViewModels
         public string Name { get; set; }
         public string RtmpUrl { get; set; }
         public bool Configured { get; set; }
+        public int Enabled { get; set; } // 1=true, 0=false
         public bool IsActive { get; set; }
         public string StreamKey { get; set; }
     }

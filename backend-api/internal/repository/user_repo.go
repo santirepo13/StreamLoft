@@ -115,7 +115,7 @@ func (r *UserRepository) UpdateStreamKey(ctx context.Context, userID int, stream
 
 func (r *UserRepository) GetDestinationsByUserID(ctx context.Context, userID int) ([]models.UserDestination, error) {
 	query := `
-		SELECT ud.id, ud.user_id, ud.destination_id, ud.stream_key,
+		SELECT ud.id, ud.user_id, ud.destination_id, ud.stream_key, ud.enabled,
 		       ud.created_at, ud.updated_at,
 		       d.id, d.name, d.rtmp_url, d.created_at
 		FROM user_destinations ud
@@ -134,7 +134,7 @@ func (r *UserRepository) GetDestinationsByUserID(ctx context.Context, userID int
 		var ud models.UserDestination
 		var d models.Destination
 		err := rows.Scan(
-			&ud.ID, &ud.UserID, &ud.DestinationID, &ud.StreamKey,
+			&ud.ID, &ud.UserID, &ud.DestinationID, &ud.StreamKey, &ud.Enabled,
 			&ud.CreatedAt, &ud.UpdatedAt,
 			&d.ID, &d.Name, &d.RTMPURL, &d.CreatedAt,
 		)
@@ -193,12 +193,12 @@ func (r *UserRepository) UpdateBitrate(ctx context.Context, userID int, bitrate 
 
 func (r *UserRepository) GetDestinationsWithStreamKey(ctx context.Context, userID int) ([]models.UserDestination, error) {
 	query := `
-		SELECT ud.id, ud.user_id, ud.destination_id, ud.stream_key,
+		SELECT ud.id, ud.user_id, ud.destination_id, ud.stream_key, ud.enabled,
 		       ud.created_at, ud.updated_at,
 		       d.id, d.name, d.rtmp_url, d.created_at
 		FROM user_destinations ud
 		JOIN destinations d ON ud.destination_id = d.id
-		WHERE ud.user_id = $1 AND ud.stream_key IS NOT NULL AND ud.stream_key != ''
+		WHERE ud.user_id = $1 AND ud.stream_key IS NOT NULL AND ud.stream_key != '' AND ud.enabled = 1
 	`
 
 	rows, err := r.db.Query(ctx, query, userID)
@@ -212,7 +212,7 @@ func (r *UserRepository) GetDestinationsWithStreamKey(ctx context.Context, userI
 		var ud models.UserDestination
 		var d models.Destination
 		err := rows.Scan(
-			&ud.ID, &ud.UserID, &ud.DestinationID, &ud.StreamKey,
+			&ud.ID, &ud.UserID, &ud.DestinationID, &ud.StreamKey, &ud.Enabled,
 			&ud.CreatedAt, &ud.UpdatedAt,
 			&d.ID, &d.Name, &d.RTMPURL, &d.CreatedAt,
 		)
@@ -226,9 +226,10 @@ func (r *UserRepository) GetDestinationsWithStreamKey(ctx context.Context, userI
 
 	return destinations, nil
 }
+
 func (r *UserRepository) GetDestinationByID(ctx context.Context, userID, destinationID int) (*models.UserDestination, error) {
 	query := `
-		SELECT ud.id, ud.user_id, ud.destination_id, ud.stream_key,
+		SELECT ud.id, ud.user_id, ud.destination_id, ud.stream_key, ud.enabled,
 		       ud.created_at, ud.updated_at,
 		       d.id, d.name, d.rtmp_url, d.created_at
 		FROM user_destinations ud
@@ -239,7 +240,7 @@ func (r *UserRepository) GetDestinationByID(ctx context.Context, userID, destina
 	var ud models.UserDestination
 	var d models.Destination
 	err := r.db.QueryRow(ctx, query, userID, destinationID).Scan(
-		&ud.ID, &ud.UserID, &ud.DestinationID, &ud.StreamKey,
+		&ud.ID, &ud.UserID, &ud.DestinationID, &ud.StreamKey, &ud.Enabled,
 		&ud.CreatedAt, &ud.UpdatedAt,
 		&d.ID, &d.Name, &d.RTMPURL, &d.CreatedAt,
 	)
@@ -264,6 +265,21 @@ func (r *UserRepository) UpdateDestinationStreamKey(ctx context.Context, userID,
 	_, err := r.db.Exec(ctx, query, streamKey, userID, destinationID)
 	if err != nil {
 		return fmt.Errorf("failed to update destination stream key: %w", err)
+	}
+
+	return nil
+}
+
+func (r *UserRepository) UpdateDestinationEnabled(ctx context.Context, userID, destinationID int, enabled int) error {
+	query := `
+		UPDATE user_destinations
+		SET enabled = $1, updated_at = NOW()
+		WHERE user_id = $2 AND id = $3
+	`
+
+	_, err := r.db.Exec(ctx, query, enabled, userID, destinationID)
+	if err != nil {
+		return fmt.Errorf("failed to update destination enabled: %w", err)
 	}
 
 	return nil

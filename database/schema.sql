@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS user_destinations (
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     destination_id INTEGER NOT NULL REFERENCES destinations(id) ON DELETE CASCADE,
     stream_key TEXT,  -- SRS BR-004: Stored encrypted
+    enabled INTEGER NOT NULL DEFAULT 1 CHECK (enabled IN (0, 1)),  -- 1=true, 0=false — runtime toggle
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     UNIQUE (user_id, destination_id)

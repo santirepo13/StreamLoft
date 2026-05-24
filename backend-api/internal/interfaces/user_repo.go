@@ -17,4 +17,5 @@ type UserRepository interface {
 	GetDestinationsWithStreamKey(ctx context.Context, userID int) ([]models.UserDestination, error)
 	GetDestinationByID(ctx context.Context, userID, destinationID int) (*models.UserDestination, error)
 	UpdateDestinationStreamKey(ctx context.Context, userID, destinationID int, streamKey string) error
+	UpdateDestinationEnabled(ctx context.Context, userID, destinationID int, enabled int) error
 }

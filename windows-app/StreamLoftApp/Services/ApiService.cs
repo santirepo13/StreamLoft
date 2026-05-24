@@ -156,6 +156,21 @@ namespace StreamLoftApp.Services
             }
         }
 
+        public async Task ToggleDestinationAsync(int destinationId, int enabled)
+        {
+            SetAuthHeader();
+
+            var response = await _httpClient.PutAsync($"/destinations/{destinationId}/toggle",
+                new StringContent(
+                    JsonConvert.SerializeObject(new { enabled }),
+                    Encoding.UTF8, "application/json"));
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception($"Failed to toggle destination: {response.StatusCode}");
+            }
+        }
+
         public async Task<StreamStatusResponse> GetStreamStatusAsync()
         {
             SetAuthHeader();
@@ -303,7 +318,12 @@ namespace StreamLoftApp.Services
         public string RtmpUrl { get; set; }
 
         public bool Configured { get; set; }
-        
+
+        public int Enabled { get; set; }
+
+        [JsonProperty("is_active")]
+        public bool IsActive { get; set; }
+
         [JsonProperty("stream_key")]
         public string StreamKey { get; set; }
     }

@@ -29,11 +29,13 @@ func NewDestinationService(
 }
 
 type destinationResponse struct {
-	ID          int    `json:"id"`
-	Name        string `json:"name"`
-	RTMPURL     string `json:"rtmp_url"`
-	Configured  bool   `json:"configured"`
-	StreamKey   string `json:"stream_key"`
+	ID         int    `json:"id"`
+	Name       string `json:"name"`
+	RTMPURL    string `json:"rtmp_url"`
+	Configured bool   `json:"configured"`
+	Enabled    int    `json:"enabled"`   // 1=true, 0=false — runtime toggle
+	IsActive   bool   `json:"is_active"` // worker currently running
+	StreamKey  string `json:"stream_key"`
 }
 
 func (s *DestinationService) GetDestinations(ctx context.Context, userID int) ([]destinationResponse, error) {
@@ -52,12 +54,16 @@ func (s *DestinationService) GetDestinations(ctx context.Context, userID int) ([
 				decryptedKey = "" // Don't expose encrypted key on error
 			}
 		}
-		
+
+		configured := d.StreamKey != nil && *d.StreamKey != ""
+
 		result[i] = destinationResponse{
 			ID:         d.ID,
 			Name:       d.Destination.Name,
 			RTMPURL:    d.Destination.RTMPURL,
-			Configured: d.StreamKey != nil && *d.StreamKey != "",
+			Configured: configured,
+			Enabled:    d.Enabled,
+			IsActive:   configured && d.Enabled == 1 && s.workerMgr.IsWorkerRunning(userID, d.ID),
 			StreamKey:  decryptedKey,
 		}
 	}
@@ -89,9 +95,14 @@ func (s *DestinationService) UpdateStreamKey(ctx context.Context, userID, destin
 		return false, err
 	}
 
+	// Auto-enable when saving a stream key
+	if streamKey != "" && dest.Enabled != 1 {
+		_ = s.userRepo.UpdateDestinationEnabled(ctx, userID, destinationID, 1)
+	}
+
 	isLive := s.streamChecker(userID)
 	if !isLive {
-		return wasConfigured, nil
+		return streamKey != "", nil
 	}
 
 	if streamKey != "" && !wasConfigured {
@@ -105,4 +116,41 @@ func (s *DestinationService) UpdateStreamKey(ctx context.Context, userID, destin
 	}
 
 	return streamKey != "", nil
+}
+
+func (s *DestinationService) ToggleDestination(ctx context.Context, userID, destinationID int, enabled int) error {
+	if enabled != 0 && enabled != 1 {
+		return ErrInvalidInput
+	}
+
+	dest, err := s.userRepo.GetDestinationByID(ctx, userID, destinationID)
+	if err != nil {
+		return err
+	}
+	if dest == nil {
+		return ErrInvalidCredentials
+	}
+
+	if err := s.userRepo.UpdateDestinationEnabled(ctx, userID, destinationID, enabled); err != nil {
+		return err
+	}
+
+	isLive := s.streamChecker(userID)
+	if !isLive {
+		return nil
+	}
+
+	hasKey := dest.StreamKey != nil && *dest.StreamKey != ""
+
+	if enabled == 1 && hasKey {
+		if err := s.workerMgr.StartWorker(ctx, userID, destinationID); err != nil {
+			return err
+		}
+	} else if enabled == 0 {
+		if err := s.workerMgr.StopWorker(ctx, userID, destinationID); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

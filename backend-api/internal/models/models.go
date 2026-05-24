@@ -25,6 +25,7 @@ type UserDestination struct {
 	DestinationID  int          `json:"destination_id"`
 	Destination    *Destination `json:"destination,omitempty"`
 	StreamKey      *string      `json:"stream_key,omitempty"`
+	Enabled        int          `json:"enabled"` // 1=true, 0=false — runtime toggle
 	CreatedAt      time.Time    `json:"created_at"`
 	UpdatedAt      time.Time    `json:"updated_at"`
 }

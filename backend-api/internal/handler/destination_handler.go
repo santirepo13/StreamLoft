@@ -1,12 +1,13 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 
-	"streamloft-api/internal/errors"
+	apierrors "streamloft-api/internal/errors"
 	"streamloft-api/internal/middleware"
 	"streamloft-api/internal/service"
 )
@@ -25,16 +26,20 @@ type UpdateDestinationRequest struct {
 	StreamKey string `json:"stream_key"`
 }
 
+type ToggleDestinationRequest struct {
+	Enabled int `json:"enabled"` // 1=true, 0=false
+}
+
 func (h *DestinationHandler) List(c *gin.Context) {
 	userID := middleware.GetUserID(c)
 	if userID == 0 {
-		errors.RespondWithError(c, errors.Unauthorized("Unauthorized"))
+		apierrors.RespondWithError(c, apierrors.Unauthorized("Unauthorized"))
 		return
 	}
 
 	destinations, err := h.destinationService.GetDestinations(c.Request.Context(), userID)
 	if err != nil {
-		errors.RespondWithError(c, errors.Internal("failed to get destinations: "+err.Error()))
+		apierrors.RespondWithError(c, apierrors.Internal("failed to get destinations: "+err.Error()))
 		return
 	}
 
@@ -44,27 +49,58 @@ func (h *DestinationHandler) List(c *gin.Context) {
 func (h *DestinationHandler) Update(c *gin.Context) {
 	userID := middleware.GetUserID(c)
 	if userID == 0 {
-		errors.RespondWithError(c, errors.Unauthorized("Unauthorized"))
+		apierrors.RespondWithError(c, apierrors.Unauthorized("Unauthorized"))
 		return
 	}
 
 	destID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		errors.RespondWithError(c, errors.BadRequest("invalid destination id"))
+		apierrors.RespondWithError(c, apierrors.BadRequest("invalid destination id"))
 		return
 	}
 
 	var req UpdateDestinationRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		errors.BindJSONError(c, err)
+		apierrors.BindJSONError(c, err)
 		return
 	}
 
 	_, err = h.destinationService.UpdateStreamKey(c.Request.Context(), userID, destID, req.StreamKey)
 	if err != nil {
-		errors.RespondWithError(c, err)
+		apierrors.RespondWithError(c, err)
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "updated"})
+}
+
+func (h *DestinationHandler) Toggle(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	if userID == 0 {
+		apierrors.RespondWithError(c, apierrors.Unauthorized("Unauthorized"))
+		return
+	}
+
+	destID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		apierrors.RespondWithError(c, apierrors.BadRequest("invalid destination id"))
+		return
+	}
+
+	var req ToggleDestinationRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		apierrors.BindJSONError(c, err)
+		return
+	}
+
+	if err := h.destinationService.ToggleDestination(c.Request.Context(), userID, destID, req.Enabled); err != nil {
+		if errors.Is(err, service.ErrInvalidInput) {
+			apierrors.RespondWithError(c, apierrors.BadRequest("enabled must be 0 or 1"))
+			return
+		}
+		apierrors.RespondWithError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "toggled"})
 }

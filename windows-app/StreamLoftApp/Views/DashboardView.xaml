@@ -233,15 +233,19 @@
                                                    TextTrimming="CharacterEllipsis"/>
                                     </StackPanel>
                                     
-                                    <!-- Configured Indicator -->
-                                    <Border Grid.Column="1" 
+                                    <!-- Configured Indicator -- click to toggle enabled -->
+                                    <Button Grid.Column="1" 
                                             CornerRadius="10"
                                             Padding="10,5"
-                                            Background="{Binding IsActive, Converter={StaticResource ConfiguredBackgroundConverter}}">
+                                            Background="{Binding IsActive, Converter={StaticResource ConfiguredBackgroundConverter}}"
+                                            BorderThickness="0"
+                                            Cursor="Hand"
+                                            Command="{Binding DataContext.DestinationBadgeCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                            CommandParameter="{Binding}">
                                         <TextBlock Text="{Binding IsActive, Converter={StaticResource ConfiguredTextConverter}}"
                                                    FontSize="11"
                                                    Foreground="#0F0E47"/>
-                                    </Border>
+                                    </Button>
                                 </Grid>
                                 
                                 <Border.InputBindings>

@@ -100,6 +100,7 @@ func main() {
 	{
 		destGroup.GET("", destHdlr.List)
 		destGroup.PUT("/:id", destHdlr.Update)
+		destGroup.PUT("/:id/toggle", destHdlr.Toggle)
 	}
 
 	broadcastGroup := r.Group("/broadcasts")
