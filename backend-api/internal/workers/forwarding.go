@@ -176,15 +176,22 @@ func (m *ForwardingManager) StartWorker(ctx context.Context, userID int, userDes
 cmd := exec.Command(
 		"ffmpeg",
 		"-re",
-		"-fflags", "+genpts+igndts",
-		"-probesize", "5M",
-		"-analyzeduration", "5M",
+		"-fflags", "+genpts+igndts+nobuffer",
+		"-flags", "low_delay",
+		"-probesize", "1M",
+		"-analyzeduration", "1M",
 		"-i", inputURL,
 		"-c:v", "copy",
 		"-c:a", "copy",
 		"-f", "flv",
 		"-flvflags", "no_duration_filesize",
-		destinationRTMPURL+"?chunk_size=4096&tcp_nodelay=1&rtmp_live=1",
+		// Append query params — use & if URL already has a query string, ? otherwise
+		destinationRTMPURL+func() string {
+			if strings.Contains(destinationRTMPURL, "?") {
+				return "&chunk_size=4096&tcp_nodelay=1&rtmp_live=1"
+			}
+			return "?chunk_size=4096&tcp_nodelay=1&rtmp_live=1"
+		}(),
 	)
 
 	cmd.Stdout = os.Stdout

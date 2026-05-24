@@ -4,7 +4,7 @@
 
 -- Examples:
 -- 1. Create YouTube destination
-INSERT INTO destinations (name, rtmp_url, created_at) VALUES ('YouTube', 'rtmp://a.rtmp.youtube.com/live2', NOW());
+INSERT INTO destinations (name, rtmp_url, created_at) VALUES ('Stripchat', 'rtmp://live.doppiocdn.com/ext', NOW());
 
 -- 2. Create Twitch destination
 INSERT INTO destinations (name, rtmp_url, created_at) VALUES ('Twitch', 'rtmp://live.twitch.tv/app', NOW());
