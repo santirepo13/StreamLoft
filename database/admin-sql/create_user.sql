@@ -9,4 +9,4 @@ VALUES ('1007054088', 'Kevin Restrepo');
 
 -- 2. Create user with numeric_id=200
 INSERT INTO users (numeric_id, name)
-VALUES ('200', 'Jane Smith');
+VALUES ('1040031189', 'Andrea Salazar');

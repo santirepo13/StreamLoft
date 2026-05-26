@@ -173,7 +173,7 @@ func (m *ForwardingManager) StartWorker(ctx context.Context, userID int, userDes
 	// Capture stderr to diagnose failures
 	stderrBuf := new(strings.Builder)
 
-cmd := exec.Command(
+	cmd := exec.Command(
 		"ffmpeg",
 		"-re",
 		"-fflags", "+genpts+igndts+nobuffer",
@@ -194,13 +194,35 @@ cmd := exec.Command(
 		}(),
 	)
 
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = io.MultiWriter(os.Stderr, stderrBuf)
+	// Use pipes to decouple ffmpeg's output from parent's os.Stdout/os.Stderr.
+	// Sharing os.Stderr across multiple exec.Cmd instances causes the Go
+	// runtime's pipe-copy goroutines to contend on the same fd, which can
+	// stall ffmpeg's stderr writes and delay its RTMP handshake.
+	stdoutR, stdoutW := io.Pipe()
+	stderrR, stderrW := io.Pipe()
+
+	cmd.Stdout = stdoutW
+	cmd.Stderr = stderrW
 
 	if err := cmd.Start(); err != nil {
+		stdoutW.Close()
+		stderrW.Close()
 		m.mu.Unlock()
 		return fmt.Errorf("failed to start ffmpeg: %w", err)
 	}
+
+	// Drain pipes asynchronously so ffmpeg never blocks on output
+	go func() {
+		io.Copy(os.Stdout, stdoutR)
+		stdoutR.Close()
+	}()
+	go func() {
+		io.Copy(io.MultiWriter(os.Stderr, stderrBuf), stderrR)
+		stderrR.Close()
+	}()
+	// Close our write ends so readers get EOF when ffmpeg exits
+	stdoutW.Close()
+	stderrW.Close()
 
 	worker := &ForwardingWorker{
 		process:        cmd,
