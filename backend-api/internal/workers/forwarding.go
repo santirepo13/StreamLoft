@@ -175,11 +175,11 @@ func (m *ForwardingManager) StartWorker(ctx context.Context, userID int, userDes
 
 	cmd := exec.Command(
 		"ffmpeg",
-		"-re",
 		"-fflags", "+genpts+igndts+nobuffer",
 		"-flags", "low_delay",
-		"-probesize", "1M",
-		"-analyzeduration", "1M",
+		"-probesize", "64k",
+		"-analyzeduration", "64k",
+		"-max_delay", "0",
 		"-i", inputURL,
 		"-c:v", "copy",
 		"-c:a", "copy",
