@@ -27,18 +27,18 @@ type ForwardingWorker struct {
 }
 
 type ForwardingManager struct {
-	workers map[string]*ForwardingWorker
-	mu      sync.RWMutex
-	srsURL  string
-	ctx     context.Context
-	cancel  context.CancelFunc
+	workers  map[string]*ForwardingWorker
+	mu       sync.RWMutex
+	rtmpURL  string
+	ctx      context.Context
+	cancel   context.CancelFunc
 }
 
-func NewForwardingManager(srsURL string) *ForwardingManager {
+func NewForwardingManager(rtmpURL string) *ForwardingManager {
 	ctx, cancel := context.WithCancel(context.Background())
 	manager := &ForwardingManager{
 		workers: make(map[string]*ForwardingWorker),
-		srsURL:  srsURL,
+		rtmpURL: rtmpURL,
 		ctx:     ctx,
 		cancel:  cancel,
 	}
@@ -168,19 +168,21 @@ func (m *ForwardingManager) StartWorker(ctx context.Context, userID int, userDes
 		Str("destination", destinationRTMPURL).
 		Msg("starting forwarding worker")
 
-	inputURL := fmt.Sprintf("%s/live/%s.flv", m.srsURL, streamKey)
+	inputURL := fmt.Sprintf("%s/%s", m.rtmpURL, streamKey)
 
 	// Capture stderr to diagnose failures
 	stderrBuf := new(strings.Builder)
 
 	cmd := exec.Command(
 		"ffmpeg",
+		"-re",
 		"-fflags", "+genpts+igndts+nobuffer",
 		"-flags", "low_delay",
 		"-probesize", "64k",
 		"-analyzeduration", "64k",
 		"-max_delay", "0",
 		"-i", inputURL,
+		"-metadata", "encoder=OBS Studio",
 		"-c:v", "copy",
 		"-c:a", "copy",
 		"-f", "flv",
