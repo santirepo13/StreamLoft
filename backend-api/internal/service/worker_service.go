@@ -12,19 +12,19 @@ type WorkerService struct {
 	userRepo     interfaces.UserRepository
 	forwardingMgr *workers.ForwardingManager
 	encryptor    *crypto.Encryptor
-	rtmpURL      string
+	srsURL       string
 }
 
 func NewWorkerService(
 	userRepo interfaces.UserRepository,
 	enc *crypto.Encryptor,
-	rtmpURL string,
+	srsURL string,
 ) *WorkerService {
 	return &WorkerService{
 		userRepo:     userRepo,
-		forwardingMgr: workers.NewForwardingManager(rtmpURL),
+		forwardingMgr: workers.NewForwardingManager(srsURL),
 		encryptor:    enc,
-		rtmpURL:      rtmpURL,
+		srsURL:       srsURL,
 	}
 }
 

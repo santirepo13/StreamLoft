@@ -27,18 +27,18 @@ type ForwardingWorker struct {
 }
 
 type ForwardingManager struct {
-	workers  map[string]*ForwardingWorker
-	mu       sync.RWMutex
-	rtmpURL  string
-	ctx      context.Context
-	cancel   context.CancelFunc
+	workers map[string]*ForwardingWorker
+	mu      sync.RWMutex
+	srsURL  string
+	ctx     context.Context
+	cancel  context.CancelFunc
 }
 
-func NewForwardingManager(rtmpURL string) *ForwardingManager {
+func NewForwardingManager(srsURL string) *ForwardingManager {
 	ctx, cancel := context.WithCancel(context.Background())
 	manager := &ForwardingManager{
 		workers: make(map[string]*ForwardingWorker),
-		rtmpURL: rtmpURL,
+		srsURL:  srsURL,
 		ctx:     ctx,
 		cancel:  cancel,
 	}
@@ -168,7 +168,7 @@ func (m *ForwardingManager) StartWorker(ctx context.Context, userID int, userDes
 		Str("destination", destinationRTMPURL).
 		Msg("starting forwarding worker")
 
-	inputURL := fmt.Sprintf("%s/%s", m.rtmpURL, streamKey)
+	inputURL := fmt.Sprintf("%s/live/%s.flv", m.srsURL, streamKey)
 
 	// Capture stderr to diagnose failures
 	stderrBuf := new(strings.Builder)

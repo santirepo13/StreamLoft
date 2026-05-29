@@ -60,7 +60,7 @@ func main() {
 	userSvc := service.NewUserService(userRepo)
 	userHdlr := handler.NewUserHandler(userSvc, cfg)
 
-	workerSvc := service.NewWorkerService(userRepo, enc, cfg.RTMPURL)
+	workerSvc := service.NewWorkerService(userRepo, enc, cfg.SRSURL)
 	streamSvc := service.NewStreamService(userRepo, broadcastRepo, workerSvc)
 	streamHdlr := handler.NewStreamHandler(streamSvc, userSvc, workerSvc, cfg)
 
