@@ -54,6 +54,19 @@ func (m *ForwardingManager) workerKey(userID, userDestinationID int) string {
 	return fmt.Sprintf("%d-%d", userID, userDestinationID)
 }
 
+// isExpectedShutdownError returns true for errors caused by intentional worker
+// shutdown (SIGTERM/SIGKILL) vs. unexpected crashes.
+func isExpectedShutdownError(err error) bool {
+	if err == nil {
+		return true
+	}
+	errStr := err.Error()
+	return strings.Contains(errStr, "broken pipe") ||
+		strings.Contains(errStr, "closed pipe") ||
+		strings.Contains(errStr, "signal: killed") ||
+		strings.Contains(errStr, "signal: terminated")
+}
+
 // handleWorkerCrash manages automatic restart of crashed workers
 func (m *ForwardingManager) handleWorkerCrash(key string, userID, userDestinationID int, err error) {
 	m.mu.Lock()
@@ -65,8 +78,9 @@ func (m *ForwardingManager) handleWorkerCrash(key string, userID, userDestinatio
 	}
 
 	worker.isRunning = false
+	worker.lastError = err
 
-	if err != nil {
+	if err != nil && !isExpectedShutdownError(err) {
 		// Build error details including captured stderr from ffmpeg
 		errorFields := log.Error().Int("user_id", userID).Int("destination_id", userDestinationID).Err(err)
 		if worker.stderrBuf != nil {
@@ -76,9 +90,6 @@ func (m *ForwardingManager) handleWorkerCrash(key string, userID, userDestinatio
 			}
 		}
 		errorFields.Msg("forwarding worker crashed")
-
-		// Update worker error state
-		worker.lastError = err
 
 		// Check if we should restart this worker
 		if worker.restartCount < 3 { // Max 3 restart attempts
@@ -227,6 +238,15 @@ func (m *ForwardingManager) StartWorker(ctx context.Context, userID int, userDes
 	}
 
 	// Drain pipes asynchronously so ffmpeg never blocks on output
+	// Close pipes when ffmpeg exits (not before — premature close causes SIGPIPE)
+	go func() {
+		err := cmd.Wait()
+		stdoutW.Close()
+		stderrW.Close()
+		m.handleWorkerCrash(key, userID, userDestinationID, err)
+	}()
+
+	// Drain stdout/stderr asynchronously
 	go func() {
 		io.Copy(os.Stdout, stdoutR)
 		stdoutR.Close()
@@ -235,9 +255,6 @@ func (m *ForwardingManager) StartWorker(ctx context.Context, userID int, userDes
 		io.Copy(io.MultiWriter(os.Stderr, stderrBuf), stderrR)
 		stderrR.Close()
 	}()
-	// Close our write ends so readers get EOF when ffmpeg exits
-	stdoutW.Close()
-	stderrW.Close()
 
 	worker := &ForwardingWorker{
 		process:        cmd,
@@ -253,11 +270,6 @@ func (m *ForwardingManager) StartWorker(ctx context.Context, userID int, userDes
 
 	m.workers[key] = worker
 	m.mu.Unlock()
-
-	go func() {
-		err := cmd.Wait()
-		m.handleWorkerCrash(key, userID, userDestinationID, err)
-	}()
 
 	log.Info().Int("user_id", userID).Int("destination_id", userDestinationID).Msg("forwarding worker started successfully")
 	return nil
