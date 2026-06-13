@@ -66,7 +66,7 @@ func (s *DestinationService) GetDestinations(ctx context.Context, userID int) ([
 			Enabled:    d.Enabled,
 			IsActive:   configured && d.Enabled == 1 && s.workerMgr.IsWorkerRunning(userID, d.ID),
 			StreamKey:  decryptedKey,
-			BitLimited: d.BitLimited,
+			BitLimited: func() int { if d.BitLimited != nil { return *d.BitLimited }; return 0 }(),
 		}
 	}
 

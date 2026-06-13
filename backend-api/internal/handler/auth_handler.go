@@ -79,7 +79,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 			RTMPURL:    d.Destination.RTMPURL,
 			StreamKey:  d.StreamKey,
 			Configured: d.StreamKey != nil && *d.StreamKey != "",
-			BitLimited: d.BitLimited,
+			BitLimited: func() int { if d.BitLimited != nil { return *d.BitLimited }; return 0 }(),
 		}
 	}
 
@@ -163,7 +163,7 @@ func mapDestinations(destinations []models.UserDestination) []DestinationRespons
 			Name:       d.Destination.Name,
 			RTMPURL:    d.Destination.RTMPURL,
 			Configured: d.StreamKey != nil && *d.StreamKey != "",
-			BitLimited: d.BitLimited,
+			BitLimited: func() int { if d.BitLimited != nil { return *d.BitLimited }; return 0 }(),
 		}
 		if d.StreamKey != nil && *d.StreamKey != "" {
 			result[i].StreamKey = d.StreamKey
