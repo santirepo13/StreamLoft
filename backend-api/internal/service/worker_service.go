@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"streamloft-api/internal/crypto"
 	"streamloft-api/internal/interfaces"
@@ -55,7 +56,7 @@ func (s *WorkerService) StartWorker(ctx context.Context, userID, userDestination
 		}
 	}
 
-	return nil
+	return fmt.Errorf("destination %d not found or has no stream key configured for user %d", userDestinationID, userID)
 }
 
 func (s *WorkerService) StopWorker(ctx context.Context, userID, userDestinationID int) error {

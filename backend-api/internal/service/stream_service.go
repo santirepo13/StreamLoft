@@ -125,6 +125,11 @@ func (s *StreamService) StartStream(ctx context.Context, streamKey string, detec
 		}
 	}
 
+	// Give SRS time to initialize the HTTP-FLV remux endpoint before
+	// ffmpeg workers try to pull from it. Without this delay a race
+	// condition causes ffmpeg to hang on the first publish.
+	time.Sleep(500 * time.Millisecond)
+
 	for _, dest := range destinations {
 		_, err := s.broadcastRepo.Create(ctx, user.ID, dest.ID)
 		if err != nil {

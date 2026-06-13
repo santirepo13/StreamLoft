@@ -193,6 +193,7 @@ func (m *ForwardingManager) StartWorker(ctx context.Context, userID int, userDes
 		"-probesize", "64k",
 		"-analyzeduration", "64k",
 		"-max_delay", "0",
+		"-timeout", "5000000",
 		"-i", inputURL,
 		"-metadata", "encoder=OBS Studio",
 	}
