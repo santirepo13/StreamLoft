@@ -1,0 +1,52 @@
+# StreamLoft - Main .gitignore
+
+# =====================
+# Common / OS
+# =====================
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+*.iml
+
+# Windows metadata (NTFS - remove these from repo)
+*:Zone.Identifier
+
+# Secrets / Keys
+.env
+*.key
+/key
+/keyfile
+/keys/
+*.pem
+
+# Logs
+*.log
+
+# Temp
+/temp/
+*.tmp
+tmp/
+
+# =====================
+# Backend API (Go)
+# =====================
+backend-api/vendor/
+backend-api/bin/
+backend-api/tmp/
+
+# =====================
+# Windows App (.NET)
+# =====================
+windows-app/**/bin/
+windows-app/**/obj/
+
+# =====================
+# Media Server (SRS)
+# =====================
+media-server/objs/
+media-server/release/
+media-server/sbin/
+media-server/lib/

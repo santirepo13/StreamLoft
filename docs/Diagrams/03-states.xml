@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2024-01-01T00:00:00.000Z" agent="StreamLoft" version="21.0.0" type="device">
+  <diagram name="States Diagram" id="states">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="title" value="StreamLoft - States Diagram" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontStyle=1;fontSize=18;" vertex="1" parent="1">
+          <mxGeometry x="550" y="20" width="400" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- User Session States -->
+        <mxCell id="session-title" value="User Session" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="60" y="80" width="120" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="session-loggedout" value="LoggedOut" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="120" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="session-authenticating" value="Authenticating" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="220" y="120" width="110" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="session-loggedin" value="LoggedIn" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="370" y="120" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="session-expired" value="TokenExpired" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="510" y="120" width="110" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Session Transitions -->
+        <mxCell id="sess-1" value="Login" style="endArrow=classic;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="session-loggedout" target="session-authenticating">
+          <mxGeometry width="50" height="50" x="180" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="sess-2" value="Success" style="endArrow=classic;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="session-authenticating" target="session-loggedin">
+          <mxGeometry width="50" height="50" x="330" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="sess-3" value="Logout" style="endArrow=classic;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="session-loggedin" target="session-loggedout">
+          <mxGeometry width="50" height="50" x="180" y="180" as="geometry">
+            <Array as="points">
+              <Object x="600" y="140" />
+              <Object x="600" y="240" />
+              <Object x="130" y="240" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sess-4" value="Token Expiry" style="endArrow=classic;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="session-loggedin" target="session-expired">
+          <mxGeometry width="50" height="50" x="470" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="sess-5" value="Refresh" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="session-expired" target="session-loggedin">
+          <mxGeometry width="50" height="50" x="540" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="sess-6" value="Login" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="session-expired" target="session-authenticating">
+          <mxGeometry width="50" height="50" x="380" y="180" as="geometry" />
+        </mxCell>
+
+        <!-- Streaming States -->
+        <mxCell id="stream-title" value="Streaming" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="60" y="280" width="120" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="stream-offline" value="Offline" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="320" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="stream-starting" value="StreamStarting" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="220" y="320" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="stream-live" value="Live" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="380" y="320" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="stream-stopping" value="StreamStopping" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="520" y="320" width="120" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Stream Transitions -->
+        <mxCell id="stream-1" value="on_publish" style="endArrow=classic;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="stream-offline" target="stream-starting">
+          <mxGeometry width="50" height="50" x="180" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="stream-2" value="Workers Started" style="endArrow=classic;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="stream-starting" target="stream-live">
+          <mxGeometry width="50" height="50" x="340" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="stream-3" value="on_unpublish" style="endArrow=classic;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="stream-live" target="stream-stopping">
+          <mxGeometry width="50" height="50" x="480" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="stream-4" value="Workers Stopped" style="endArrow=classic;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="stream-stopping" target="stream-offline">
+          <mxGeometry width="50" height="50" x="640" y="320" as="geometry" />
+        </mxCell>
+
+        <!-- Destination States -->
+        <mxCell id="dest-title" value="Destination" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="60" y="440" width="120" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="dest-disabled" value="Disabled" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="480" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="dest-enabling" value="Enabling" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="220" y="480" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="dest-enabled" value="Enabled" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="360" y="480" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="dest-disabling" value="Disabling" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="500" y="480" width="100" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Destination Transitions -->
+        <mxCell id="dest-1" value="Toggle On" style="endArrow=classic;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="dest-disabled" target="dest-enabling">
+          <mxGeometry width="50" height="50" x="180" y="480" as="geometry" />
+        </mxCell>
+        <mxCell id="dest-2" value="Worker Started" style="endArrow=classic;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="dest-enabling" target="dest-enabled">
+          <mxGeometry width="50" height="50" x="320" y="480" as="geometry" />
+        </mxCell>
+        <mxCell id="dest-3" value="Toggle Off" style="endArrow=classic;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="dest-enabled" target="dest-disabling">
+          <mxGeometry width="50" height="50" x="460" y="480" as="geometry" />
+        </mxCell>
+        <mxCell id="dest-4" value="Worker Stopped" style="endArrow=classic;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="dest-disabling" target="dest-disabled">
+          <mxGeometry width="50" height="50" x="560" y="520" as="geometry">
+            <Array as="points">
+              <Object x="650" y="500" />
+              <Object x="650" y="600" />
+              <Object x="130" y="600" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Forwarding Worker States -->
+        <mxCell id="worker-title" value="Forwarding Worker" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="60" y="600" width="140" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="worker-stopped" value="Stopped" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="640" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="worker-starting" value="Starting" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="220" y="640" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="worker-running" value="Running" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="360" y="640" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="worker-stopping" value="Stopping" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="500" y="640" width="100" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Worker Transitions -->
+        <mxCell id="worker-1" value="Start" style="endArrow=classic;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="worker-stopped" target="worker-starting">
+          <mxGeometry width="50" height="50" x="180" y="640" as="geometry" />
+        </mxCell>
+        <mxCell id="worker-2" value="Process Ready" style="endArrow=classic;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="worker-starting" target="worker-running">
+          <mxGeometry width="50" height="50" x="320" y="640" as="geometry" />
+        </mxCell>
+        <mxCell id="worker-3" value="Stop" style="endArrow=classic;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="worker-running" target="worker-stopping">
+          <mxGeometry width="50" height="50" x="460" y="640" as="geometry" />
+        </mxCell>
+        <mxCell id="worker-4" value="Process Ended" style="endArrow=classic;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="worker-stopping" target="worker-stopped">
+          <mxGeometry width="50" height="50" x="600" y="640" as="geometry" />
+        </mxCell>
+
+        <!-- Worker Failure States -->
+        <mxCell id="worker-failed" value="Failed" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="360" y="720" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="worker-fail-1" value="Error" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;dashed=1;" edge="1" parent="1" source="worker-running" target="worker-failed">
+          <mxGeometry width="50" height="50" x="380" y="680" as="geometry" />
+        </mxCell>
+        <mxCell id="worker-fail-2" value="Retry" style="endArrow=classic;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="worker-failed" target="worker-starting">
+          <mxGeometry width="50" height="50" x="280" y="720" as="geometry" />
+        </mxCell>
+
+        <!-- Legend -->
+        <mxCell id="legend-box" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="800" y="80" width="280" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-title" value="State Colors" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="810" y="90" width="100" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-active" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="810" y="120" width="30" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-active-txt" value="Active State" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="850" y="120" width="100" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-transition" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="810" y="150" width="30" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-transition-txt" value="Transition State" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="850" y="150" width="120" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-inactive" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="810" y="180" width="30" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-inactive-txt" value="Inactive/Error State" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="850" y="180" width="130" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- Key Details -->
+        <mxCell id="key-box" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="800" y="240" width="280" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="key-title" value="Key Observations" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="810" y="250" width="150" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="key-1" value="1. User Session is independent per machine" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="810" y="280" width="260" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="key-2" value="2. Streaming triggered by SRS callbacks" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="810" y="305" width="260" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="key-3" value="3. Destination toggle affects one user only" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="810" y="330" width="260" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="key-4" value="4. Each destination has independent worker" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="810" y="355" width="260" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="key-5" value="5. Worker failure does not affect other workers" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="810" y="380" width="260" height="20" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
