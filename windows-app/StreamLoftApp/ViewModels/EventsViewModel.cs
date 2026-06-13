@@ -1,8 +1,10 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using StreamLoftApp.Services;
+using StreamLoftApp.Views;
 
 namespace StreamLoftApp.ViewModels
 {
@@ -74,13 +76,16 @@ namespace StreamLoftApp.ViewModels
 
         private async System.Threading.Tasks.Task DeleteBroadcastAsync(BroadcastGroupItem item)
         {
-            var result = MessageBox.Show(
-                $"This will permanently delete this broadcast event from the database.\n\nDestination: {item.DestinationName}\nDate: {item.Date}\nDuration: {item.DurationText}\n\nThis action cannot be undone. Continue?",
-                "Delete Broadcast Event",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
+            var owner = Application.Current.Windows
+                .OfType<System.Windows.Window>()
+                .FirstOrDefault(w => w.IsActive) ?? Application.Current.MainWindow;
 
-            if (result != MessageBoxResult.Yes)
+            var dialog = new DeleteConfirmDialog(item.DestinationName, item.Date, item.DurationText)
+            {
+                Owner = owner
+            };
+
+            if (dialog.ShowDialog() != true)
                 return;
 
             IsLoading = true;

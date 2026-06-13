@@ -3,9 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:StreamLoftApp.Views.Controls"
         Title="Dashboard - StreamLoft" Height="576" Width="768"
-        WindowStartupLocation="CenterScreen"
-        Background="#272757">
-    
+        Style="{StaticResource AppWindowStyle}">
+
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -13,36 +12,29 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        
+
         <!-- Header -->
         <Grid Grid.Row="0" Margin="0,0,0,20">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            
-            <TextBlock Text="StreamLoft Dashboard" 
-                       FontSize="24" 
-                       FontWeight="Bold" 
-                       Foreground="#FFFFFF"/>
-            
-            <!-- Logout Button -->
-            <Button Grid.Column="1" 
-                    Content="Logout" 
+
+            <TextBlock Text="StreamLoft Dashboard"
+                       Style="{StaticResource PageTitleStyle}"
+                       FontSize="24"/>
+
+            <Button Grid.Column="1"
+                    Content="Logout"
                     Command="{Binding LogoutCommand}"
-                    Width="80" 
-                    Height="30"
-                    Background="#505081"
-                    Foreground="#FFFFFF"
-                    FontSize="12"
-                    Cursor="Hand"
-                    BorderThickness="0"/>
+                    Style="{StaticResource SecondaryButtonStyle}"
+                    Width="80" Height="30"
+                    FontSize="12"/>
         </Grid>
-        
+
         <!-- Stream Info Panel -->
-        <Border Grid.Row="1" 
-                Background="#505081" 
-                CornerRadius="10" 
+        <Border Grid.Row="1"
+                Style="{StaticResource SectionBorderStyle}"
                 Padding="20"
                 Margin="0,0,0,20">
             <Grid>
@@ -52,12 +44,11 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                
+
                 <!-- RTMP URL -->
                 <StackPanel Grid.Column="0" Margin="0,0,15,0">
-                    <TextBlock Text="StreamLoft RTMP URL" 
-                               Foreground="#FFFFFF" 
-                               FontSize="12" 
+                    <TextBlock Text="StreamLoft RTMP URL"
+                               Style="{StaticResource FormLabelStyle}"
                                Margin="0,0,0,5"/>
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -65,29 +56,20 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <TextBox Text="{Binding RtmpUrl, Mode=OneWay}"
-                                 IsReadOnly="True"
-                                 Background="#8686AC"
-                                 Foreground="#0F0E47"
-                                 Padding="8"
-                                 BorderThickness="0"/>
-                        <Button Grid.Column="1" 
-                                Content="Copy" 
+                                 Style="{StaticResource ReadOnlyTextBoxStyle}"/>
+                        <Button Grid.Column="1"
+                                Content="Copy"
                                 Command="{Binding CopyRtmpUrlCommand}"
-                                Width="60" 
-                                Margin="5,0,0,0"
-                                Background="#272757"
-                                Foreground="#FFFFFF"
-                                FontSize="11"
-                                Cursor="Hand"
-                                BorderThickness="0"/>
+                                Style="{StaticResource SmallDarkButtonStyle}"
+                                Width="60"
+                                Margin="5,0,0,0"/>
                     </Grid>
                 </StackPanel>
-                
+
                 <!-- Stream Key -->
                 <StackPanel Grid.Column="1" Margin="15,0,15,0">
-                    <TextBlock Text="StreamLoft Stream Key" 
-                               Foreground="#FFFFFF" 
-                               FontSize="12" 
+                    <TextBlock Text="StreamLoft Stream Key"
+                               Style="{StaticResource FormLabelStyle}"
                                Margin="0,0,0,5"/>
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -95,52 +77,41 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <TextBox Text="{Binding StreamKey, Mode=OneWay}"
-                                 IsReadOnly="True"
-                                 Background="#8686AC"
-                                 Foreground="#0F0E47"
-                                 Padding="8"
-                                 BorderThickness="0"/>
-                        <Button Grid.Column="1" 
-                                Content="Copy" 
+                                 Style="{StaticResource ReadOnlyTextBoxStyle}"/>
+                        <Button Grid.Column="1"
+                                Content="Copy"
                                 Command="{Binding CopyStreamKeyCommand}"
-                                Width="60" 
-                                Margin="5,0,0,0"
-                                Background="#272757"
-                                Foreground="#FFFFFF"
-                                FontSize="11"
-                                Cursor="Hand"
-                                BorderThickness="0"/>
+                                Style="{StaticResource SmallDarkButtonStyle}"
+                                Width="60"
+                                Margin="5,0,0,0"/>
                     </Grid>
                 </StackPanel>
-                
+
                  <!-- Status Indicator -->
                  <StackPanel Grid.Column="2" HorizontalAlignment="Center">
-                     <TextBlock Text="Status" 
-                                Foreground="#FFFFFF" 
-                                FontSize="12" 
+                     <TextBlock Text="Status"
+                                Style="{StaticResource FormLabelStyle}"
                                 Margin="0,0,0,5"
                                 HorizontalAlignment="Center"/>
-                     <Border CornerRadius="15" 
+                     <Border CornerRadius="15"
                              Padding="15,5"
                              Background="{Binding IsLive, Converter={StaticResource LiveStatusBackgroundConverter}}">
                          <TextBlock Text="{Binding StatusText}"
                                     FontWeight="Bold"
                                     FontSize="14"
-                                    Foreground="#0F0E47"/>
+                                    Foreground="{StaticResource ColorDarkText}"/>
                      </Border>
-                     <!-- Bitrate Warning -->
                      <TextBlock Text="⚠ Low Bitrate"
-                                Foreground="#FFA500"
+                                Foreground="{StaticResource ColorWarning}"
                                 FontSize="11"
                                 Margin="0,5,0,0"
                                 Visibility="{Binding BitrateWarning, Converter={StaticResource BoolToVisibilityConverter}}"/>
                  </StackPanel>
-                 
+
                  <!-- Bitrate Setter -->
                  <StackPanel Grid.Column="3" HorizontalAlignment="Right" Margin="15,0,0,0">
-                     <TextBlock Text="Upload Bitrate" 
-                                Foreground="#FFFFFF" 
-                                FontSize="12" 
+                     <TextBlock Text="Upload Bitrate"
+                                Style="{StaticResource FormLabelStyle}"
                                 Margin="0,0,0,5"
                                 HorizontalAlignment="Center"/>
                      <Grid>
@@ -150,35 +121,27 @@
                          </Grid.ColumnDefinitions>
                          <TextBox Text="{Binding ConfiguredBitrate, Mode=TwoWay}"
                                   HorizontalAlignment="Stretch"
-                                  Background="#8686AC"
-                                  Foreground="#0F0E47"
-                                  Padding="8"
-                                  BorderThickness="0"
+                                  Style="{StaticResource InputTextBoxStyle}"
                                   VerticalContentAlignment="Center"/>
-                         <Button Grid.Column="1" 
+                         <Button Grid.Column="1"
                                  Content="Set"
                                  Command="{Binding UpdateBitrateCommand}"
-                                 Width="50" 
-                                 Margin="5,0,0,0"
-                                 Background="#272757"
-                                 Foreground="#FFFFFF"
-                                 FontSize="11"
-                                 Cursor="Hand"
-                                 BorderThickness="0"/>
+                                 Style="{StaticResource SmallDarkButtonStyle}"
+                                 Width="50"
+                                 Margin="5,0,0,0"/>
                      </Grid>
-                     <TextBlock Text="kbps" 
-                                Foreground="#FFFFFF" 
-                                FontSize="11" 
+                     <TextBlock Text="kbps"
+                                Foreground="{StaticResource ColorWhiteText}"
+                                FontSize="11"
                                 Margin="0,2,0,0"
                                 HorizontalAlignment="Center"/>
                  </StackPanel>
             </Grid>
         </Border>
-        
+
         <!-- Destinations Section -->
-        <Border Grid.Row="2" 
-                Background="#505081" 
-                CornerRadius="10" 
+        <Border Grid.Row="2"
+                Style="{StaticResource SectionBorderStyle}"
                 Padding="20">
             <Grid>
                 <Grid.RowDefinitions>
@@ -186,65 +149,45 @@
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
-                
+
                 <Grid Grid.Row="0" Margin="0,0,0,15">
-                    <TextBlock Text="Destinations" 
-                               FontSize="18" 
-                               FontWeight="Bold" 
-                               Foreground="#FFFFFF"/>
-                    
-                    <Button Content="View Events" 
+                    <TextBlock Text="Destinations"
+                               Style="{StaticResource PageTitleStyle}"
+                               FontSize="18"/>
+
+                    <Button Content="View Events"
                             Command="{Binding EventsCommand}"
                             HorizontalAlignment="Right"
-                            Width="100"
-                            Height="28"
-                            Background="#8686AC"
-                            Foreground="#0F0E47"
-                            FontSize="12"
-                            Cursor="Hand"
-                            BorderThickness="0"/>
+                            Style="{StaticResource SmallPrimaryButtonStyle}"
+                            Width="100" Height="28"/>
                 </Grid>
-                
+
                 <!-- Destinations List -->
-                <ListBox Grid.Row="1" 
+                <ListBox Grid.Row="1"
                          ItemsSource="{Binding Destinations}"
-                         Background="Transparent"
-                         BorderThickness="0">
-                    <ListBox.ItemContainerStyle>
-                        <Style TargetType="ListBoxItem">
-                            <Setter Property="Padding" Value="0"/>
-                            <Setter Property="Margin" Value="0"/>
-                            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                            <Setter Property="Background" Value="Transparent"/>
-                        </Style>
-                    </ListBox.ItemContainerStyle>
+                         Style="{StaticResource TransparentListBoxStyle}">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <Border Background="#8686AC" 
-                                    CornerRadius="8" 
-                                    Padding="15"
-                                    Margin="0,5"
+                            <Border Style="{StaticResource CardBorderStyle}"
                                     Cursor="Hand">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    
+
                                     <StackPanel>
-                                        <TextBlock Text="{Binding Name}" 
-                                                   FontWeight="Bold" 
+                                        <TextBlock Text="{Binding Name}"
+                                                   FontWeight="Bold"
                                                    FontSize="14"
-                                                   Foreground="#0F0E47"/>
-                                        <TextBlock Text="{Binding RtmpUrl}" 
+                                                   Foreground="{StaticResource ColorDarkText}"/>
+                                        <TextBlock Text="{Binding RtmpUrl}"
                                                    FontSize="11"
-                                                   Foreground="#FFFFFF"
+                                                   Foreground="{StaticResource ColorWhiteText}"
                                                    TextTrimming="CharacterEllipsis"/>
                                     </StackPanel>
-                                    
-                                    <!-- Configured Indicator, click to toggle enabled -->
-                                    <Border Grid.Column="1" 
+
+                                    <Border Grid.Column="1"
                                             CornerRadius="10"
                                             Padding="10,5"
                                             Background="{Binding IsActive, Converter={StaticResource ConfiguredBackgroundConverter}}"
@@ -256,12 +199,12 @@
                                         </Border.InputBindings>
                                         <TextBlock Text="{Binding IsActive, Converter={StaticResource ConfiguredTextConverter}}"
                                                    FontSize="11"
-                                                   Foreground="#0F0E47"/>
+                                                   Foreground="{StaticResource ColorDarkText}"/>
                                     </Border>
                                 </Grid>
-                                
+
                                 <Border.InputBindings>
-                                    <MouseBinding MouseAction="LeftClick" 
+                                    <MouseBinding MouseAction="LeftClick"
                                                   Command="{Binding DataContext.DestinationClickCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
                                                   CommandParameter="{Binding}"/>
                                 </Border.InputBindings>
@@ -271,10 +214,10 @@
                 </ListBox>
             </Grid>
         </Border>
-        
+
         <!-- Loading Overlay -->
         <controls:LoadingOverlay Grid.RowSpan="4"
-                                 IsVisible="{Binding IsLoading}"
-                                 Message="Loading..." />
+                                  IsVisible="{Binding IsLoading}"
+                                  Message="Loading..." />
     </Grid>
 </Window>

@@ -3,82 +3,56 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:StreamLoftApp.Views.Controls"
         Title="Broadcast Events - StreamLoft" Height="800" Width="960"
-        WindowStartupLocation="CenterScreen"
-        Background="#272757">
-    
+        Style="{StaticResource AppWindowStyle}">
+
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        
+
         <!-- Header -->
         <Grid Grid.Row="0" Margin="0,0,0,20">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            
-            <TextBlock Text="Broadcast History" 
-                       FontSize="22" 
-                       FontWeight="Bold" 
-                       Foreground="#FFFFFF"/>
-            
+
+            <TextBlock Text="Broadcast History"
+                       Style="{StaticResource PageTitleStyle}"
+                       FontSize="22"/>
+
             <StackPanel Grid.Column="1" Orientation="Horizontal">
-                <Button Content="Refresh" 
+                <Button Content="Refresh"
                         Command="{Binding RefreshCommand}"
-                        Width="80" 
-                        Height="30"
-                        Background="#8686AC"
-                        Foreground="#0F0E47"
-                        FontSize="12"
-                        Cursor="Hand"
-                        BorderThickness="0"
+                        Style="{StaticResource SmallPrimaryButtonStyle}"
+                        Width="80" Height="30"
                         Margin="0,0,10,0"/>
-                
-                <Button Content="Back" 
+
+                <Button Content="Back"
                         Command="{Binding BackCommand}"
-                        Width="60" 
-                        Height="30"
-                        Background="#505081"
-                        Foreground="#FFFFFF"
-                        FontSize="12"
-                        Cursor="Hand"
-                        BorderThickness="0"/>
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Width="60" Height="30"
+                        FontSize="12"/>
             </StackPanel>
         </Grid>
-        
+
         <!-- Events List -->
-        <Border Grid.Row="1" 
-                Background="#505081" 
-                CornerRadius="10" 
+        <Border Grid.Row="1"
+                Style="{StaticResource SectionBorderStyle}"
                 Padding="15">
             <ListBox ItemsSource="{Binding Broadcasts}"
                      SelectedItem="{Binding SelectedBroadcast}"
-                     Background="Transparent"
-                     BorderThickness="0">
-                <ListBox.ItemContainerStyle>
-                    <Style TargetType="ListBoxItem">
-                        <Setter Property="Padding" Value="0"/>
-                        <Setter Property="Margin" Value="0"/>
-                        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                        <Setter Property="Background" Value="Transparent"/>
-                    </Style>
-                </ListBox.ItemContainerStyle>
+                     Style="{StaticResource TransparentListBoxStyle}">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <Border Background="#8686AC" 
-                                CornerRadius="8" 
-                                Padding="15"
-                                Margin="0,5">
+                        <Border Style="{StaticResource CardBorderStyle}">
                             <Border.ContextMenu>
                                 <ContextMenu>
                                     <MenuItem Header="Delete"
-                                              Foreground="#FF4444"
-                                              Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
-                                              CommandParameter="{Binding}"/>
+                                              Foreground="{StaticResource ColorDanger}"
+                                              Click="DeleteMenuItem_Click"/>
                                 </ContextMenu>
                             </Border.ContextMenu>
                             <Grid>
@@ -86,23 +60,23 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                
+
                                 <StackPanel>
-                                    <TextBlock Text="{Binding DestinationName}" 
-                                               FontWeight="Bold" 
+                                    <TextBlock Text="{Binding DestinationName}"
+                                               FontWeight="Bold"
                                                FontSize="14"
-                                               Foreground="#0F0E47"/>
-                                    <TextBlock Text="{Binding Date}" 
+                                               Foreground="{StaticResource ColorDarkText}"/>
+                                    <TextBlock Text="{Binding Date}"
                                                FontSize="12"
-                                               Foreground="#FFFFFF"
+                                               Foreground="{StaticResource ColorWhiteText}"
                                                Margin="0,5,0,0"/>
                                 </StackPanel>
-                                
+
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                     <TextBlock Text="{Binding DurationText}"
                                                FontWeight="Bold"
                                                FontSize="14"
-                                               Foreground="#0F0E47"
+                                               Foreground="{StaticResource ColorDarkText}"
                                                HorizontalAlignment="Right"/>
                                 </StackPanel>
                             </Grid>
@@ -111,19 +85,18 @@
                 </ListBox.ItemTemplate>
             </ListBox>
         </Border>
-        
+
         <!-- Empty State -->
         <TextBlock Grid.Row="1"
                    Text="No broadcast events yet"
-                   Foreground="#8686AC"
+                   Style="{StaticResource HelperTextStyle}"
                    FontSize="14"
                    HorizontalAlignment="Center"
                    VerticalAlignment="Center"
                    Visibility="{Binding Broadcasts.Count, Converter={StaticResource EmptyToVisibilityConverter}}"/>
-        
-        <!-- Loading Overlay -->
+
         <controls:LoadingOverlay Grid.RowSpan="3"
-                                 IsVisible="{Binding IsLoading}"
-                                 Message="Loading..." />
+                                  IsVisible="{Binding IsLoading}"
+                                  Message="Loading..." />
     </Grid>
 </Window>

@@ -4,13 +4,18 @@
              xmlns:converters="clr-namespace:StreamLoftApp.Converters"
              StartupUri="Views/LoginView.xaml">
     <Application.Resources>
-        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-        <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
-        <converters:LiveStatusBackgroundConverter x:Key="LiveStatusBackgroundConverter"/>
-        <converters:ConfiguredBackgroundConverter x:Key="ConfiguredBackgroundConverter"/>
-        <converters:ConfiguredTextConverter x:Key="ConfiguredTextConverter"/>
-        <converters:ConfiguredStatusConverter x:Key="ConfiguredStatusConverter"/>
-        <converters:ConfiguredStatusForegroundConverter x:Key="ConfiguredStatusForegroundConverter"/>
-        <converters:EmptyToVisibilityConverter x:Key="EmptyToVisibilityConverter"/>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Styles/SharedStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+            <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+            <converters:LiveStatusBackgroundConverter x:Key="LiveStatusBackgroundConverter"/>
+            <converters:ConfiguredBackgroundConverter x:Key="ConfiguredBackgroundConverter"/>
+            <converters:ConfiguredTextConverter x:Key="ConfiguredTextConverter"/>
+            <converters:ConfiguredStatusConverter x:Key="ConfiguredStatusConverter"/>
+            <converters:ConfiguredStatusForegroundConverter x:Key="ConfiguredStatusForegroundConverter"/>
+            <converters:EmptyToVisibilityConverter x:Key="EmptyToVisibilityConverter"/>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

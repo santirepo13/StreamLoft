@@ -1,0 +1,140 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ============================================================
+         Color Palette
+         ============================================================ -->
+    <SolidColorBrush x:Key="ColorWindowBg" Color="#272757"/>
+    <SolidColorBrush x:Key="ColorSectionBg" Color="#505081"/>
+    <SolidColorBrush x:Key="ColorInputBg" Color="#8686AC"/>
+    <SolidColorBrush x:Key="ColorDarkText" Color="#0F0E47"/>
+    <SolidColorBrush x:Key="ColorWhiteText" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="ColorSubduedText" Color="#8686AC"/>
+    <SolidColorBrush x:Key="ColorDanger" Color="#FF4444"/>
+    <SolidColorBrush x:Key="ColorWarning" Color="#FFA500"/>
+    <SolidColorBrush x:Key="ColorSuccess" Color="#00FF00"/>
+
+    <!-- ============================================================
+         Window
+         ============================================================ -->
+    <Style x:Key="AppWindowStyle" TargetType="Window">
+        <Setter Property="Background" Value="{StaticResource ColorWindowBg}"/>
+        <Setter Property="WindowStartupLocation" Value="CenterScreen"/>
+    </Style>
+
+    <!-- ============================================================
+         Border
+         ============================================================ -->
+    <Style x:Key="SectionBorderStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource ColorSectionBg}"/>
+        <Setter Property="CornerRadius" Value="10"/>
+    </Style>
+
+    <Style x:Key="CardBorderStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource ColorInputBg}"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="Padding" Value="15"/>
+        <Setter Property="Margin" Value="0,5"/>
+    </Style>
+
+    <!-- ============================================================
+         TextBox
+         ============================================================ -->
+    <Style x:Key="InputTextBoxStyle" TargetType="TextBox">
+        <Setter Property="Background" Value="{StaticResource ColorInputBg}"/>
+        <Setter Property="Foreground" Value="{StaticResource ColorDarkText}"/>
+        <Setter Property="Padding" Value="8"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+
+    <Style x:Key="ReadOnlyTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource InputTextBoxStyle}">
+        <Setter Property="IsReadOnly" Value="True"/>
+    </Style>
+
+    <!-- ============================================================
+         Button
+         ============================================================ -->
+    <Style x:Key="ButtonBaseStyle" TargetType="Button">
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+
+    <Style x:Key="PrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource ButtonBaseStyle}">
+        <Setter Property="Background" Value="{StaticResource ColorInputBg}"/>
+        <Setter Property="Foreground" Value="{StaticResource ColorDarkText}"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+    </Style>
+
+    <Style x:Key="SecondaryButtonStyle" TargetType="Button" BasedOn="{StaticResource ButtonBaseStyle}">
+        <Setter Property="Background" Value="{StaticResource ColorSectionBg}"/>
+        <Setter Property="Foreground" Value="{StaticResource ColorWhiteText}"/>
+        <Setter Property="FontSize" Value="14"/>
+    </Style>
+
+    <Style x:Key="SmallDarkButtonStyle" TargetType="Button" BasedOn="{StaticResource ButtonBaseStyle}">
+        <Setter Property="Background" Value="{StaticResource ColorWindowBg}"/>
+        <Setter Property="Foreground" Value="{StaticResource ColorWhiteText}"/>
+        <Setter Property="FontSize" Value="11"/>
+    </Style>
+
+    <Style x:Key="SmallPrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource ButtonBaseStyle}">
+        <Setter Property="Background" Value="{StaticResource ColorInputBg}"/>
+        <Setter Property="Foreground" Value="{StaticResource ColorDarkText}"/>
+        <Setter Property="FontSize" Value="12"/>
+    </Style>
+
+    <Style x:Key="DangerButtonStyle" TargetType="Button" BasedOn="{StaticResource ButtonBaseStyle}">
+        <Setter Property="Background" Value="{StaticResource ColorDanger}"/>
+        <Setter Property="Foreground" Value="{StaticResource ColorWhiteText}"/>
+    </Style>
+
+    <!-- ============================================================
+         TextBlock
+         ============================================================ -->
+    <Style x:Key="PageTitleStyle" TargetType="TextBlock">
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="{StaticResource ColorWhiteText}"/>
+    </Style>
+
+    <Style x:Key="DarkPageTitleStyle" TargetType="TextBlock">
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="{StaticResource ColorDarkText}"/>
+    </Style>
+
+    <Style x:Key="FormLabelStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource ColorWhiteText}"/>
+        <Setter Property="FontSize" Value="12"/>
+    </Style>
+
+    <Style x:Key="HelperTextStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource ColorSubduedText}"/>
+        <Setter Property="FontSize" Value="12"/>
+    </Style>
+
+    <Style x:Key="ErrorTextStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource ColorWarning}"/>
+        <Setter Property="FontSize" Value="12"/>
+    </Style>
+
+    <!-- ============================================================
+         ListBoxItem (implicit — applies to all ListBoxes)
+         ============================================================ -->
+    <Style TargetType="ListBoxItem">
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Margin" Value="0"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="Background" Value="Transparent"/>
+    </Style>
+
+    <!-- ============================================================
+         ListBox
+         ============================================================ -->
+    <Style x:Key="TransparentListBoxStyle" TargetType="ListBox">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+
+</ResourceDictionary>
