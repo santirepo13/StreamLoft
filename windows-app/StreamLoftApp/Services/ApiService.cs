@@ -160,7 +160,7 @@ namespace StreamLoftApp.Services
         {
             SetAuthHeader();
 
-            var response = await _httpClient.PutAsync($"/destinations/{destinationId}/toggle",
+            var response = await _httpClient.PutAsync($"/destinations/toggle/{destinationId}",
                 new StringContent(
                     JsonConvert.SerializeObject(new { enabled }),
                     Encoding.UTF8, "application/json"));

@@ -50,3 +50,5 @@ media-server/objs/
 media-server/release/
 media-server/sbin/
 media-server/lib/
+windows-app/publish
+publish/
