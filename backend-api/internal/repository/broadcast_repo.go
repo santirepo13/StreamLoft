@@ -136,6 +136,34 @@ func (r *BroadcastRepository) GetByUserID(ctx context.Context, userID int) ([]mo
 
 	return sessions, nil
 }
+func (r *BroadcastRepository) DeleteByDestinationAndDate(ctx context.Context, userID int, destinationName string, date time.Time) (int64, error) {
+	query := `
+		DELETE FROM broadcast_sessions
+		WHERE user_id = $1
+		  AND user_destination_id IN (
+		      SELECT ud.id
+		      FROM user_destinations ud
+		      JOIN destinations d ON ud.destination_id = d.id
+		      WHERE d.name = $2
+		  )
+		  AND date = $3
+	`
+
+	tag, err := r.db.Exec(ctx, query, userID, destinationName, date)
+	if err != nil {
+		return 0, fmt.Errorf("failed to delete broadcast sessions: %w", err)
+	}
+
+	deleted := tag.RowsAffected()
+	log.Info().
+		Int("user_id", userID).
+		Str("destination_name", destinationName).
+		Str("date", date.Format("2006-01-02")).
+		Int64("deleted", deleted).
+		Msg("broadcast sessions deleted by destination and date")
+	return deleted, nil
+}
+
 func (r *BroadcastRepository) GetByUserIDWithDestination(ctx context.Context, userID int) ([]interfaces.BroadcastSessionWithDestination, error) {
 	query := `
 		SELECT bs.id, bs.user_id, bs.user_destination_id, d.name,

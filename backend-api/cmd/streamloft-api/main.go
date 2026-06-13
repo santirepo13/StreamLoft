@@ -107,6 +107,7 @@ func main() {
 	broadcastGroup.Use(middleware.AuthMiddleware(jwtSvc))
 	{
 		broadcastGroup.GET("", broadcastHdlr.List)
+		broadcastGroup.DELETE("", broadcastHdlr.Delete)
 	}
 
 	addr := ":" + cfg.APIPort

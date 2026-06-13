@@ -13,6 +13,7 @@ type BroadcastSessionRepository interface {
 	GetActiveByUserID(ctx context.Context, userID int) ([]models.BroadcastSession, error)
 	GetByUserID(ctx context.Context, userID int) ([]models.BroadcastSession, error)
 	GetByUserIDWithDestination(ctx context.Context, userID int) ([]BroadcastSessionWithDestination, error)
+	DeleteByDestinationAndDate(ctx context.Context, userID int, destinationName string, date time.Time) (int64, error)
 }
 
 type BroadcastSessionWithDestination struct {

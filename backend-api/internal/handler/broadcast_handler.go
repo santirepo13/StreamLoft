@@ -35,3 +35,27 @@ func (h *BroadcastHandler) List(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"broadcasts": broadcasts})
 }
+
+func (h *BroadcastHandler) Delete(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	if userID == 0 {
+		errors.RespondWithError(c, errors.Unauthorized("Unauthorized"))
+		return
+	}
+
+	destination := c.Query("destination")
+	date := c.Query("date")
+
+	if destination == "" || date == "" {
+		errors.RespondWithError(c, errors.BadRequest("destination and date query parameters are required"))
+		return
+	}
+
+	deleted, err := h.broadcastService.DeleteBroadcastGroup(c.Request.Context(), userID, destination, date)
+	if err != nil {
+		errors.RespondWithError(c, errors.Internal("failed to delete broadcast: "+err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"deleted": deleted})
+}

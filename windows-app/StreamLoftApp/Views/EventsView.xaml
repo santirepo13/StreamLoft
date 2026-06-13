@@ -55,6 +55,7 @@
                 CornerRadius="10" 
                 Padding="15">
             <ListBox ItemsSource="{Binding Broadcasts}"
+                     SelectedItem="{Binding SelectedBroadcast}"
                      Background="Transparent"
                      BorderThickness="0">
                 <ListBox.ItemContainerStyle>
@@ -72,6 +73,14 @@
                                 CornerRadius="8" 
                                 Padding="15"
                                 Margin="0,5">
+                            <Border.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Delete"
+                                              Foreground="#FF4444"
+                                              Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                              CommandParameter="{Binding}"/>
+                                </ContextMenu>
+                            </Border.ContextMenu>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>

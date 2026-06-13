@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"sort"
 	"time"
 
@@ -36,6 +37,15 @@ type BroadcastGroupResponse struct {
 	DestinationName string `json:"destination_name"`
 	Date            string `json:"date"`
 	TotalMinutes    int    `json:"total_minutes"`
+}
+
+func (s *BroadcastService) DeleteBroadcastGroup(ctx context.Context, userID int, destinationName, dateStr string) (int64, error) {
+	date, err := time.Parse("2006-01-02", dateStr)
+	if err != nil {
+		return 0, fmt.Errorf("invalid date format: %w", err)
+	}
+
+	return s.broadcastRepo.DeleteByDestinationAndDate(ctx, userID, destinationName, date)
 }
 
 func (s *BroadcastService) GetBroadcasts(ctx context.Context, userID int) ([]BroadcastGroupResponse, error) {

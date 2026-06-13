@@ -200,7 +200,24 @@ namespace StreamLoftApp.Services
             throw new Exception($"Failed to get broadcasts: {response.StatusCode}");
         }
 
-        public async Task UpdateBitrateAsync(int bitrate)
+		public async Task<int> DeleteBroadcastAsync(string destinationName, string date)
+		{
+			SetAuthHeader();
+
+			var response = await _httpClient.DeleteAsync(
+				$"/broadcasts?destination={Uri.EscapeDataString(destinationName)}&date={Uri.EscapeDataString(date)}");
+
+			if (response.IsSuccessStatusCode)
+			{
+				var content = await response.Content.ReadAsStringAsync();
+				var result = JsonConvert.DeserializeObject<DeleteBroadcastResponse>(content);
+				return result?.Deleted ?? 0;
+			}
+
+			throw new Exception($"Failed to delete broadcast: {response.StatusCode}");
+		}
+
+		public async Task UpdateBitrateAsync(int bitrate)
         {
             SetAuthHeader();
             
@@ -364,14 +381,20 @@ namespace StreamLoftApp.Services
         public bool BitrateWarning { get; set; }
     }
 
-    public class BroadcastGroupResponse
-    {
-        [JsonProperty("destination_name")]
-        public string DestinationName { get; set; }
+	public class BroadcastGroupResponse
+	{
+		[JsonProperty("destination_name")]
+		public string DestinationName { get; set; }
 
-        public string Date { get; set; }
+		public string Date { get; set; }
 
-        [JsonProperty("total_minutes")]
-        public int TotalMinutes { get; set; }
-    }
+		[JsonProperty("total_minutes")]
+		public int TotalMinutes { get; set; }
+	}
+
+	public class DeleteBroadcastResponse
+	{
+		[JsonProperty("deleted")]
+		public int Deleted { get; set; }
+	}
 }
