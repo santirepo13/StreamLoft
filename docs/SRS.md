@@ -108,7 +108,7 @@ Include this because the LLM needs to understand requirement force.
 | Product type | Desktop app + API + media server service |
 | Primary users | Streamers who need to stream to multiple platforms from one source, especially those with poor international upload routing |
 | Main goal | Forward one incoming RTMP stream to multiple external RTMP destinations |
-| Deployment environment | Media Server + Go API VPS: 172.86.73.79; Database VPS: 87.239.135.39:5432 (PostgreSQL, accessible only from API VPS) |
+| Deployment environment | Media Server + Go API VPS: 74.81.35.20; Database VPS: 87.239.135.39:5432 (PostgreSQL, accessible only from API VPS) |
 | Main external dependencies | SRS, PostgreSQL, OBS/streaming software on user side, external streaming platforms (YouTube, Twitch, Facebook) |
 
 ## 5.2 Actors and External Systems

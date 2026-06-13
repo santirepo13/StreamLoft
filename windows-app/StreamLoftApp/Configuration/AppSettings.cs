@@ -38,7 +38,7 @@ namespace StreamLoftApp.Configuration
                 // Fall through to default
             }
 
-            return new AppSettings { ApiBaseUrl = "http://172.86.73.79:8080" };
+            return new AppSettings { ApiBaseUrl = "http://74.81.35.20:8080" };
         }
     }
 }

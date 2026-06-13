@@ -42,8 +42,8 @@ http_server {
 vhost __defaultVhost__ {
     http_hooks {
         enabled         on;
-        on_publish      http://172.86.73.79:8080/stream/start;
-        on_unpublish    http://172.86.73.79:8080/stream/stop;
+        on_publish      http://74.81.35.20:8080/stream/start;
+        on_unpublish    http://74.81.35.20:8080/stream/stop;
     }
 
     http_remux {
@@ -60,7 +60,9 @@ vhost __defaultVhost__ {
 ``
 
 to start srs 
+cd /opt/SRS-CentOS7-x86_64-6.0-r0/usr/local/srs
 ./objs/srs -c conf/srs.conf
+
 
 Check running
 ps aux | grep -i srs
@@ -70,7 +72,7 @@ ss -lntp | grep srs
 
 2. Deploy the API via building it:
 
-Prerequisites on the API server (172.86.73.79):
+Prerequisites on the API server (74.81.35.20):
 
 apt update
 apt install -y golang git postgresql-client
@@ -93,8 +95,8 @@ DATABASE_USER=postgres
 DATABASE_PASSWORD=L...
 DATABASE_NAME=streamloft
 API_PORT=8080
-SRS_URL=http://172.86.73.79:8081
-RTMP_URL=rtmp://172.86.73.79/live
+SRS_URL=http://74.81.35.20:8081
+RTMP_URL=rtmp://74.81.35.20/live
 JWT_SECRET=ncTuR7x67SX1Kl6PIWIH1eYeQT46gLOTEN1TOonMsQM=
 LOG_LEVEL=info
 ENCRYPTION_KEY_PATH=/opt/StreamLoft/streamloft_master.key
@@ -226,11 +228,11 @@ Or create a desktop shortcut to StreamLoftApp.exe for end users.
 
 Check SRS is running:
 
-curl http://172.86.73.79:8081/
+curl http://74.81.35.20:8081/
 
 Check API health:
 
-curl http://172.86.73.79:8080/health
+curl http://74.81.35.20:8080/health
 
 Expected response: {"status":"ok"}
 

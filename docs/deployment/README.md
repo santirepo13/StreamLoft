@@ -1,12 +1,12 @@
 # StreamLoft Deployment Guide
 ## Server Components
 
-### Media Server (172.86.73.79)
+### Media Server (74.81.35.20)
 - SRS Media Server
 - RTMP Port: 1935
-- HTTP Callbacks: 172.86.73.79:8080
+- HTTP Callbacks: 74.81.35.20:8080
 
-### Go API (172.86.73.79)
+### Go API (74.81.35.20)
 - Backend API Server
 - Port: 8080
 - Database: 87.239.135.39:5432

@@ -1,5 +1,5 @@
 # StreamLoft Media Server
 ## SRS Configuration
 - RTMP ingest: 1935
-- HTTP callbacks: 172.86.73.79:8080
+- HTTP callbacks: 74.81.35.20:8080
 - Configuration in conf/srs.conf

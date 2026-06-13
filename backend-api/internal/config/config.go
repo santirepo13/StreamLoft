@@ -11,18 +11,18 @@ import (
 )
 
 type Config struct {
-	DatabaseHost       string
-	DatabasePort       int
-	DatabaseUser       string
-	DatabasePassword   string
-	DatabaseName       string
-	APIPort            string
-	SRSURL             string
-	RTMPURL            string
-	JWTSecret          string
-	LogLevel           string
+	DatabaseHost      string
+	DatabasePort      int
+	DatabaseUser      string
+	DatabasePassword  string
+	DatabaseName      string
+	APIPort           string
+	SRSURL            string
+	RTMPURL           string
+	JWTSecret         string
+	LogLevel          string
 	EncryptionKeyPath string
-	EnvFilePath        string
+	EnvFilePath       string
 }
 
 func (c *Config) DatabaseURL() string {
@@ -34,14 +34,14 @@ func (c *Config) DatabaseURL() string {
 
 func New() (*Config, error) {
 	cfg := &Config{
-		EnvFilePath:        "/opt/StreamLoft/api.env",
-		EncryptionKeyPath:  "/opt/StreamLoft/streamloft_master.key",
-		DatabasePort:       5432,
+		EnvFilePath:       "/opt/StreamLoft/api.env",
+		EncryptionKeyPath: "/opt/StreamLoft/streamloft_master.key",
+		DatabasePort:      5432,
 		DatabaseName:      "streamloft",
-		APIPort:          "8080",
-		RTMPURL:          "rtmp://172.86.73.79/live",
-		SRSURL:           "http://172.86.73.79:8081",
-		LogLevel:         "info",
+		APIPort:           "8080",
+		RTMPURL:           "rtmp://74.81.35.20/live",
+		SRSURL:            "http://74.81.35.20:8081",
+		LogLevel:          "info",
 	}
 
 	if err := cfg.loadFromEnvFile(); err != nil {
