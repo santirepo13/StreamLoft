@@ -195,14 +195,21 @@ func (m *ForwardingManager) StartWorker(ctx context.Context, userID int, userDes
 		"-max_delay", "0",
 		"-i", inputURL,
 		"-metadata", "encoder=OBS Studio",
-		"-c:v", "copy",
-		"-c:a", "copy",
 	}
 
 	if bitLimited {
 		args = append(args,
+			"-c:v", "libx264",
+			"-preset", "ultrafast",
+			"-b:v", "10000k",
 			"-maxrate", "10000k",
 			"-bufsize", "10000k",
+			"-c:a", "copy",
+		)
+	} else {
+		args = append(args,
+			"-c:v", "copy",
+			"-c:a", "copy",
 		)
 	}
 

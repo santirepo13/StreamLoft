@@ -1,6 +1,7 @@
 <Window x:Class="StreamLoftApp.Views.DashboardView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:StreamLoftApp.Views.Controls"
         Title="Dashboard - StreamLoft" Height="576" Width="768"
         WindowStartupLocation="CenterScreen"
         Background="#272757">
@@ -23,7 +24,7 @@
             <TextBlock Text="StreamLoft Dashboard" 
                        FontSize="24" 
                        FontWeight="Bold" 
-                       Foreground="#0F0E47"/>
+                       Foreground="#FFFFFF"/>
             
             <!-- Logout Button -->
             <Button Grid.Column="1" 
@@ -55,7 +56,7 @@
                 <!-- RTMP URL -->
                 <StackPanel Grid.Column="0" Margin="0,0,15,0">
                     <TextBlock Text="StreamLoft RTMP URL" 
-                               Foreground="#8686AC" 
+                               Foreground="#FFFFFF" 
                                FontSize="12" 
                                Margin="0,0,0,5"/>
                     <Grid>
@@ -85,7 +86,7 @@
                 <!-- Stream Key -->
                 <StackPanel Grid.Column="1" Margin="15,0,15,0">
                     <TextBlock Text="StreamLoft Stream Key" 
-                               Foreground="#8686AC" 
+                               Foreground="#FFFFFF" 
                                FontSize="12" 
                                Margin="0,0,0,5"/>
                     <Grid>
@@ -115,7 +116,7 @@
                  <!-- Status Indicator -->
                  <StackPanel Grid.Column="2" HorizontalAlignment="Center">
                      <TextBlock Text="Status" 
-                                Foreground="#8686AC" 
+                                Foreground="#FFFFFF" 
                                 FontSize="12" 
                                 Margin="0,0,0,5"
                                 HorizontalAlignment="Center"/>
@@ -138,7 +139,7 @@
                  <!-- Bitrate Setter -->
                  <StackPanel Grid.Column="3" HorizontalAlignment="Right" Margin="15,0,0,0">
                      <TextBlock Text="Upload Bitrate" 
-                                Foreground="#8686AC" 
+                                Foreground="#FFFFFF" 
                                 FontSize="12" 
                                 Margin="0,0,0,5"
                                 HorizontalAlignment="Center"/>
@@ -166,7 +167,7 @@
                                  BorderThickness="0"/>
                      </Grid>
                      <TextBlock Text="kbps" 
-                                Foreground="#8686AC" 
+                                Foreground="#FFFFFF" 
                                 FontSize="11" 
                                 Margin="0,2,0,0"
                                 HorizontalAlignment="Center"/>
@@ -209,6 +210,15 @@
                          ItemsSource="{Binding Destinations}"
                          Background="Transparent"
                          BorderThickness="0">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Padding" Value="0"/>
+                            <Setter Property="Margin" Value="0"/>
+                            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                            <Setter Property="Background" Value="Transparent"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <Border Background="#8686AC" 
@@ -229,7 +239,7 @@
                                                    Foreground="#0F0E47"/>
                                         <TextBlock Text="{Binding RtmpUrl}" 
                                                    FontSize="11"
-                                                   Foreground="#272757"
+                                                   Foreground="#FFFFFF"
                                                    TextTrimming="CharacterEllipsis"/>
                                     </StackPanel>
                                     
@@ -262,13 +272,9 @@
             </Grid>
         </Border>
         
-        <!-- Loading Indicator -->
-        <TextBlock Grid.Row="3" 
-                   Text="Loading..." 
-                   Foreground="#8686AC"
-                   FontSize="12"
-                   Margin="0,10,0,0"
-                   HorizontalAlignment="Center"
-                   Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"/>
+        <!-- Loading Overlay -->
+        <controls:LoadingOverlay Grid.RowSpan="4"
+                                 IsVisible="{Binding IsLoading}"
+                                 Message="Loading..." />
     </Grid>
 </Window>

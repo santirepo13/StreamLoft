@@ -1,6 +1,7 @@
 <Window x:Class="StreamLoftApp.Views.EventsView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:StreamLoftApp.Views.Controls"
         Title="Broadcast Events - StreamLoft" Height="800" Width="960"
         WindowStartupLocation="CenterScreen"
         Background="#272757">
@@ -22,7 +23,7 @@
             <TextBlock Text="Broadcast History" 
                        FontSize="22" 
                        FontWeight="Bold" 
-                       Foreground="#0F0E47"/>
+                       Foreground="#FFFFFF"/>
             
             <StackPanel Grid.Column="1" Orientation="Horizontal">
                 <Button Content="Refresh" 
@@ -56,6 +57,15 @@
             <ListBox ItemsSource="{Binding Broadcasts}"
                      Background="Transparent"
                      BorderThickness="0">
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem">
+                        <Setter Property="Padding" Value="0"/>
+                        <Setter Property="Margin" Value="0"/>
+                        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                        <Setter Property="Background" Value="Transparent"/>
+                    </Style>
+                </ListBox.ItemContainerStyle>
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <Border Background="#8686AC" 
@@ -75,7 +85,7 @@
                                                Foreground="#0F0E47"/>
                                     <TextBlock Text="{Binding Date}" 
                                                FontSize="12"
-                                               Foreground="#272757"
+                                               Foreground="#FFFFFF"
                                                Margin="0,5,0,0"/>
                                 </StackPanel>
                                 
@@ -102,13 +112,9 @@
                    VerticalAlignment="Center"
                    Visibility="{Binding Broadcasts.Count, Converter={StaticResource EmptyToVisibilityConverter}}"/>
         
-        <!-- Loading -->
-        <TextBlock Grid.Row="2" 
-                   Text="Loading..." 
-                   Foreground="#8686AC"
-                   FontSize="12"
-                   Margin="0,10,0,0"
-                   HorizontalAlignment="Center"
-                   Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"/>
+        <!-- Loading Overlay -->
+        <controls:LoadingOverlay Grid.RowSpan="3"
+                                 IsVisible="{Binding IsLoading}"
+                                 Message="Loading..." />
     </Grid>
 </Window>

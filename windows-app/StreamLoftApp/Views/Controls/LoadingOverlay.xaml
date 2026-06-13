@@ -1,0 +1,26 @@
+<UserControl x:Class="StreamLoftApp.Views.Controls.LoadingOverlay"
+             x:Name="root"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+             Visibility="{Binding IsVisible, ElementName=root, Converter={StaticResource BoolToVisibilityConverter}}">
+    <Grid>
+        <Rectangle Fill="#80000000" />
+        <Border Background="#505081"
+                CornerRadius="12"
+                Padding="30"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+            <StackPanel HorizontalAlignment="Center">
+                <wv2:WebView2 x:Name="Browser"
+                              Width="100"
+                              Height="100" />
+                <TextBlock Text="{Binding Message, ElementName=root}"
+                           Foreground="#FFFFFF"
+                           FontSize="13"
+                           HorizontalAlignment="Center"
+                           Margin="0,12,0,0" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

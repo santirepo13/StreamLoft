@@ -259,7 +259,8 @@ namespace StreamLoftApp.ViewModels
                         Configured = dest.Configured,
                         Enabled = dest.Enabled,
                         StreamKey = dest.StreamKey ?? "",
-                        IsActive = dest.Enabled == 1 && dest.Configured && IsLive
+                        IsActive = dest.Enabled == 1 && dest.Configured && IsLive,
+                        BitLimited = dest.BitLimited
                     });
                 }
 

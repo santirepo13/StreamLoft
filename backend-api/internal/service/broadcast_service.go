@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"sort"
 	"time"
 
 	"streamloft-api/internal/interfaces"
@@ -68,6 +69,10 @@ func (s *BroadcastService) GetBroadcasts(ctx context.Context, userID int) ([]Bro
 	for _, g := range groups {
 		result = append(result, *g)
 	}
+
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].Date > result[j].Date
+	})
 
 	return result, nil
 }
