@@ -51,6 +51,7 @@ type DestinationResponse struct {
 	RTMPURL      string `json:"rtmp_url"`
 	StreamKey    *string `json:"stream_key,omitempty"`
 	Configured   bool   `json:"configured"`
+	BitLimited   int    `json:"bit_limited"`
 }
 
 func (h *AuthHandler) Login(c *gin.Context) {
@@ -78,6 +79,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 			RTMPURL:    d.Destination.RTMPURL,
 			StreamKey:  d.StreamKey,
 			Configured: d.StreamKey != nil && *d.StreamKey != "",
+			BitLimited: d.BitLimited,
 		}
 	}
 
@@ -161,6 +163,7 @@ func mapDestinations(destinations []models.UserDestination) []DestinationRespons
 			Name:       d.Destination.Name,
 			RTMPURL:    d.Destination.RTMPURL,
 			Configured: d.StreamKey != nil && *d.StreamKey != "",
+			BitLimited: d.BitLimited,
 		}
 		if d.StreamKey != nil && *d.StreamKey != "" {
 			result[i].StreamKey = d.StreamKey

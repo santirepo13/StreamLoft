@@ -7,14 +7,14 @@ namespace StreamLoftApp.Views
     {
         private readonly DestinationViewModel _viewModel;
 
-        public DestinationView(int destinationId, string destinationName, bool isConfigured, string streamKey)
+        public DestinationView(int destinationId, string destinationName, bool isConfigured, string streamKey, bool bitLimited = false)
         {
             InitializeComponent();
-            
-            _viewModel = new DestinationViewModel(destinationId, destinationName, isConfigured, streamKey);
+
+            _viewModel = new DestinationViewModel(destinationId, destinationName, isConfigured, streamKey, bitLimited);
             _viewModel.OnSaved += OnSaved;
             _viewModel.OnCancel += OnCancel;
-            
+
             DataContext = _viewModel;
         }
 

@@ -115,7 +115,7 @@ func (r *UserRepository) UpdateStreamKey(ctx context.Context, userID int, stream
 
 func (r *UserRepository) GetDestinationsByUserID(ctx context.Context, userID int) ([]models.UserDestination, error) {
 	query := `
-		SELECT ud.id, ud.user_id, ud.destination_id, ud.stream_key, ud.enabled,
+		SELECT ud.id, ud.user_id, ud.destination_id, ud.stream_key, ud.enabled, ud.bit_limited,
 		       ud.created_at, ud.updated_at,
 		       d.id, d.name, d.rtmp_url, d.created_at
 		FROM user_destinations ud
@@ -134,7 +134,7 @@ func (r *UserRepository) GetDestinationsByUserID(ctx context.Context, userID int
 		var ud models.UserDestination
 		var d models.Destination
 		err := rows.Scan(
-			&ud.ID, &ud.UserID, &ud.DestinationID, &ud.StreamKey, &ud.Enabled,
+			&ud.ID, &ud.UserID, &ud.DestinationID, &ud.StreamKey, &ud.Enabled, &ud.BitLimited,
 			&ud.CreatedAt, &ud.UpdatedAt,
 			&d.ID, &d.Name, &d.RTMPURL, &d.CreatedAt,
 		)
@@ -193,7 +193,7 @@ func (r *UserRepository) UpdateBitrate(ctx context.Context, userID int, bitrate 
 
 func (r *UserRepository) GetDestinationsWithStreamKey(ctx context.Context, userID int) ([]models.UserDestination, error) {
 	query := `
-		SELECT ud.id, ud.user_id, ud.destination_id, ud.stream_key, ud.enabled,
+		SELECT ud.id, ud.user_id, ud.destination_id, ud.stream_key, ud.enabled, ud.bit_limited,
 		       ud.created_at, ud.updated_at,
 		       d.id, d.name, d.rtmp_url, d.created_at
 		FROM user_destinations ud
@@ -212,7 +212,7 @@ func (r *UserRepository) GetDestinationsWithStreamKey(ctx context.Context, userI
 		var ud models.UserDestination
 		var d models.Destination
 		err := rows.Scan(
-			&ud.ID, &ud.UserID, &ud.DestinationID, &ud.StreamKey, &ud.Enabled,
+			&ud.ID, &ud.UserID, &ud.DestinationID, &ud.StreamKey, &ud.Enabled, &ud.BitLimited,
 			&ud.CreatedAt, &ud.UpdatedAt,
 			&d.ID, &d.Name, &d.RTMPURL, &d.CreatedAt,
 		)
@@ -229,7 +229,7 @@ func (r *UserRepository) GetDestinationsWithStreamKey(ctx context.Context, userI
 
 func (r *UserRepository) GetDestinationByID(ctx context.Context, userID, destinationID int) (*models.UserDestination, error) {
 	query := `
-		SELECT ud.id, ud.user_id, ud.destination_id, ud.stream_key, ud.enabled,
+		SELECT ud.id, ud.user_id, ud.destination_id, ud.stream_key, ud.enabled, ud.bit_limited,
 		       ud.created_at, ud.updated_at,
 		       d.id, d.name, d.rtmp_url, d.created_at
 		FROM user_destinations ud
@@ -240,7 +240,7 @@ func (r *UserRepository) GetDestinationByID(ctx context.Context, userID, destina
 	var ud models.UserDestination
 	var d models.Destination
 	err := r.db.QueryRow(ctx, query, userID, destinationID).Scan(
-		&ud.ID, &ud.UserID, &ud.DestinationID, &ud.StreamKey, &ud.Enabled,
+		&ud.ID, &ud.UserID, &ud.DestinationID, &ud.StreamKey, &ud.Enabled, &ud.BitLimited,
 		&ud.CreatedAt, &ud.UpdatedAt,
 		&d.ID, &d.Name, &d.RTMPURL, &d.CreatedAt,
 	)
@@ -265,6 +265,21 @@ func (r *UserRepository) UpdateDestinationStreamKey(ctx context.Context, userID,
 	_, err := r.db.Exec(ctx, query, streamKey, userID, destinationID)
 	if err != nil {
 		return fmt.Errorf("failed to update destination stream key: %w", err)
+	}
+
+	return nil
+}
+
+func (r *UserRepository) UpdateDestinationBitLimited(ctx context.Context, userID, destinationID int, bitLimited int) error {
+	query := `
+		UPDATE user_destinations
+		SET bit_limited = $1, updated_at = NOW()
+		WHERE user_id = $2 AND id = $3
+	`
+
+	_, err := r.db.Exec(ctx, query, bitLimited, userID, destinationID)
+	if err != nil {
+		return fmt.Errorf("failed to update destination bit_limited: %w", err)
 	}
 
 	return nil

@@ -23,7 +23,8 @@ func NewDestinationHandler(destSvc *service.DestinationService) *DestinationHand
 }
 
 type UpdateDestinationRequest struct {
-	StreamKey string `json:"stream_key"`
+	StreamKey  string `json:"stream_key"`
+	BitLimited *int   `json:"bit_limited,omitempty"`
 }
 
 type ToggleDestinationRequest struct {
@@ -69,6 +70,17 @@ func (h *DestinationHandler) Update(c *gin.Context) {
 	if err != nil {
 		apierrors.RespondWithError(c, err)
 		return
+	}
+
+	if req.BitLimited != nil {
+		if err := h.destinationService.UpdateBitLimited(c.Request.Context(), userID, destID, *req.BitLimited); err != nil {
+			if errors.Is(err, service.ErrInvalidInput) {
+				apierrors.RespondWithError(c, apierrors.BadRequest("bit_limited must be 0 or 1"))
+				return
+			}
+			apierrors.RespondWithError(c, err)
+			return
+		}
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "updated"})

@@ -1,11 +1,14 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using StreamLoftApp.Models;
 using StreamLoftApp.Services;
+using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace StreamLoftApp.ViewModels
 {
@@ -98,6 +101,60 @@ namespace StreamLoftApp.ViewModels
         public event Action<DestinationItem> OnDestinationClick;
         public event Action OnEventsClick;
         public event Action OnLogout;
+        public event Action OnDestinationSaved;
+        public event Action<int> OnBitrateUpdated;
+        public event Action<DestinationItem, bool> OnDestinationToggled;
+
+        public void RefreshDestinations()
+        {
+            _ = RefreshDestinationsAsync();
+        }
+
+        public void RefreshBitrate(int bitrate)
+        {
+            ConfiguredBitrate = bitrate;
+        }
+
+        public void RefreshDestinationToggle(DestinationItem destination, bool isEnabled)
+        {
+            var dest = Destinations.FirstOrDefault(d => d.Id == destination.Id);
+            if (dest != null)
+            {
+                dest.Enabled = isEnabled ? 1 : 0;
+                dest.IsActive = isEnabled && dest.Configured && IsLive;
+                UpdateDestinationsActiveStatus();
+            }
+        }
+
+        private async System.Threading.Tasks.Task RefreshDestinationsAsync()
+        {
+            try
+            {
+                var destinations = await _apiService.GetDestinationsAsync();
+                Application.Current?.Dispatcher.Invoke(() =>
+                {
+                    Destinations.Clear();
+                    foreach (var dest in destinations)
+                    {
+                        Destinations.Add(new DestinationItem
+                        {
+                            Id = dest.Id,
+                            Name = dest.Name,
+                            RtmpUrl = dest.RtmpUrl,
+                            Configured = dest.Configured,
+                            Enabled = dest.Enabled,
+                            StreamKey = dest.StreamKey ?? "",
+                            IsActive = dest.Enabled == 1 && dest.Configured && IsLive,
+                            BitLimited = dest.BitLimited
+                        });
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to refresh destinations: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
 
         public DashboardViewModel()
         {
@@ -270,6 +327,7 @@ namespace StreamLoftApp.ViewModels
                 await _apiService.ToggleDestinationAsync(destination.Id, newEnabled);
                 destination.Enabled = newEnabled;
                 UpdateDestinationsActiveStatus();
+                OnDestinationToggled?.Invoke(destination, newEnabled == 1);
             }
             catch (Exception ex)
             {
@@ -311,6 +369,7 @@ namespace StreamLoftApp.ViewModels
             {
                 await _apiService.UpdateBitrateAsync(ConfiguredBitrate.Value);
                 MessageBox.Show($"Bitrate updated to {ConfiguredBitrate.Value} kbps", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                OnBitrateUpdated?.Invoke(ConfiguredBitrate.Value);
             }
             catch (Exception ex)
             {
@@ -332,5 +391,6 @@ namespace StreamLoftApp.ViewModels
         public int Enabled { get; set; } // 1=true, 0=false
         public bool IsActive { get; set; }
         public string StreamKey { get; set; }
+        public int BitLimited { get; set; }
     }
 }

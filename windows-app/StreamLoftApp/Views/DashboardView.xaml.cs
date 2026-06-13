@@ -15,6 +15,9 @@ namespace StreamLoftApp.Views
             _viewModel.OnDestinationClick += NavigateToDestination;
             _viewModel.OnEventsClick += NavigateToEvents;
             _viewModel.OnLogout += NavigateToLogin;
+            _viewModel.OnDestinationSaved += RefreshDestinations;
+            _viewModel.OnBitrateUpdated += RefreshBitrate;
+            _viewModel.OnDestinationToggled += RefreshDestinationToggle;
             
             DataContext = _viewModel;
             
@@ -23,7 +26,7 @@ namespace StreamLoftApp.Views
 
         private void NavigateToDestination(DestinationItem destination)
         {
-            var destWindow = new DestinationView(destination.Id, destination.Name, destination.Configured, destination.StreamKey);
+            var destWindow = new DestinationView(destination.Id, destination.Name, destination.Configured, destination.StreamKey, destination.BitLimited == 1);
             destWindow.ShowDialog();
             
             // Refresh data after returning
@@ -41,6 +44,21 @@ namespace StreamLoftApp.Views
             var loginWindow = new LoginView();
             loginWindow.Show();
             this.Close();
+        }
+
+        private void RefreshDestinations()
+        {
+            _viewModel.RefreshDestinations();
+        }
+
+        private void RefreshBitrate(int bitrate)
+        {
+            _viewModel.ConfiguredBitrate = bitrate;
+        }
+
+        private void RefreshDestinationToggle(DestinationItem destination, bool isEnabled)
+        {
+            _viewModel.RefreshDestinationToggle(destination, isEnabled);
         }
     }
 }

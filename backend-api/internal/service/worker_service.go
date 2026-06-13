@@ -49,8 +49,9 @@ func (s *WorkerService) StartWorker(ctx context.Context, userID, userDestination
 				return err
 			}
 
+			bitLimited := dest.BitLimited == 1
 			targetURL := dest.Destination.RTMPURL + "/" + decryptedKey
-			return s.forwardingMgr.StartWorker(ctx, userID, userDestinationID, *user.StreamKey, targetURL)
+			return s.forwardingMgr.StartWorker(ctx, userID, userDestinationID, *user.StreamKey, targetURL, bitLimited)
 		}
 	}
 

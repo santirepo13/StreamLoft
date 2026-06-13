@@ -9,5 +9,6 @@ namespace StreamLoftApp.Models
         public string RtmpUrl { get; set; }
         public string StreamKey { get; set; }
         public bool Enabled { get; set; }
+        public bool BitLimited { get; set; }
     }
 }

@@ -22,6 +22,7 @@ type ForwardingWorker struct {
 	lastHealthCheck time.Time
 	streamKey        string
 	destinationURL   string
+	bitLimited       bool
 	lastError        error
 	stderrBuf        *strings.Builder // Captures ffmpeg stderr
 }
@@ -126,11 +127,12 @@ func (m *ForwardingManager) scheduleWorkerRestart(key string, userID, userDestin
 	// Store the original parameters for restart
 	streamKey := worker.streamKey
 	destinationURL := worker.destinationURL
-	
+	bitLimited := worker.bitLimited
+
 	m.mu.Unlock()
-	
+
 	// Restart the worker
-	restartErr := m.StartWorker(context.Background(), userID, userDestinationID, streamKey, destinationURL)
+	restartErr := m.StartWorker(context.Background(), userID, userDestinationID, streamKey, destinationURL, bitLimited)
 	if restartErr != nil {
 		log.Error().
 			Int("user_id", userID).
@@ -140,7 +142,7 @@ func (m *ForwardingManager) scheduleWorkerRestart(key string, userID, userDestin
 	}
 }
 
-func (m *ForwardingManager) StartWorker(ctx context.Context, userID int, userDestinationID int, streamKey, destinationRTMPURL string) error {
+func (m *ForwardingManager) StartWorker(ctx context.Context, userID int, userDestinationID int, streamKey, destinationRTMPURL string, bitLimited bool) error {
 	key := m.workerKey(userID, userDestinationID)
 
 	m.mu.Lock()
@@ -173,8 +175,7 @@ func (m *ForwardingManager) StartWorker(ctx context.Context, userID int, userDes
 	// Capture stderr to diagnose failures
 	stderrBuf := new(strings.Builder)
 
-	cmd := exec.Command(
-		"ffmpeg",
+	args := []string{
 		"-re",
 		"-fflags", "+genpts+igndts+nobuffer",
 		"-flags", "low_delay",
@@ -185,6 +186,16 @@ func (m *ForwardingManager) StartWorker(ctx context.Context, userID int, userDes
 		"-metadata", "encoder=OBS Studio",
 		"-c:v", "copy",
 		"-c:a", "copy",
+	}
+
+	if bitLimited {
+		args = append(args,
+			"-maxrate", "10000k",
+			"-bufsize", "10000k",
+		)
+	}
+
+	args = append(args,
 		"-f", "flv",
 		"-flvflags", "no_duration_filesize",
 		// Append query params — use & if URL already has a query string, ? otherwise
@@ -195,6 +206,8 @@ func (m *ForwardingManager) StartWorker(ctx context.Context, userID int, userDes
 			return "?chunk_size=4096&tcp_nodelay=1&rtmp_live=1"
 		}(),
 	)
+
+	cmd := exec.Command("ffmpeg", args...)
 
 	// Use pipes to decouple ffmpeg's output from parent's os.Stdout/os.Stderr.
 	// Sharing os.Stderr across multiple exec.Cmd instances causes the Go
@@ -234,6 +247,7 @@ func (m *ForwardingManager) StartWorker(ctx context.Context, userID int, userDes
 		lastHealthCheck: time.Now(),
 		streamKey:       streamKey,
 		destinationURL:  destinationRTMPURL,
+		bitLimited:      bitLimited,
 		stderrBuf:       stderrBuf,
 	}
 
