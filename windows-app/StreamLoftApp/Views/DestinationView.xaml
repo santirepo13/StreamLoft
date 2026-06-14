@@ -3,7 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:StreamLoftApp.Views.Controls"
         Title="Configure Destination - StreamLoft" Height="640" Width="720"
-        Style="{StaticResource AppWindowStyle}">
+        Style="{StaticResource AppWindowStyle}"
+        WindowStartupLocation="CenterScreen">
 
     <Grid Margin="25">
         <Grid.RowDefinitions>
@@ -25,7 +26,8 @@
 
         <!-- Input Form -->
         <Border Grid.Row="1"
-                Style="{StaticResource SectionBorderStyle}"
+                Background="{StaticResource ColorSectionBg}"
+                CornerRadius="10"
                 Padding="20">
             <StackPanel>
                 <TextBlock Text="Stream Key"

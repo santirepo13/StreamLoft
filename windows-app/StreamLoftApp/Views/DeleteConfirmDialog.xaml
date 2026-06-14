@@ -3,7 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Delete Broadcast Event"
         Width="440" Height="240"
-        Style="{StaticResource DialogWindowStyle}">
+        Background="{StaticResource ColorWindowBg}"
+        WindowStartupLocation="CenterOwner">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>

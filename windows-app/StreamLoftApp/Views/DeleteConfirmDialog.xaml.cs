@@ -8,6 +8,8 @@ namespace StreamLoftApp.Views
         {
             InitializeComponent();
 
+            Style = (Style)Resources["DialogWindowStyle"];
+
             MessageText.Text =
                 $"This will permanently delete this broadcast event from the database.\n\n" +
                 $"Destination: {destinationName}\n" +

@@ -5,14 +5,11 @@
         <ResourceDictionary Source="/Styles/SharedStyles.xaml"/>
     </ResourceDictionary.MergedDictionaries>
 
-    <!-- Dialog window: smaller, fixed size, tool-style -->
     <Style x:Key="DialogWindowStyle" TargetType="Window" BasedOn="{StaticResource AppWindowStyle}">
         <Setter Property="ResizeMode" Value="NoResize"/>
-        <Setter Property="WindowStartupLocation" Value="CenterOwner"/>
         <Setter Property="WindowStyle" Value="ToolWindow"/>
     </Style>
 
-    <!-- Selectable message text (TextBox for copy/paste, looks like TextBlock) -->
     <Style x:Key="DialogMessageStyle" TargetType="TextBox">
         <Setter Property="IsReadOnly" Value="True"/>
         <Setter Property="BorderThickness" Value="0"/>
@@ -23,7 +20,6 @@
         <Setter Property="VerticalAlignment" Value="Center"/>
     </Style>
 
-    <!-- Dialog buttons -->
     <Style x:Key="DialogDangerButtonStyle" TargetType="Button" BasedOn="{StaticResource DangerButtonStyle}">
         <Setter Property="Width" Value="100"/>
         <Setter Property="Height" Value="32"/>

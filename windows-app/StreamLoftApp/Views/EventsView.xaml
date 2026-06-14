@@ -3,7 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:StreamLoftApp.Views.Controls"
         Title="Broadcast Events - StreamLoft" Height="800" Width="960"
-        Style="{StaticResource AppWindowStyle}">
+        Style="{StaticResource AppWindowStyle}"
+        WindowStartupLocation="CenterScreen">
 
     <Grid Margin="20">
         <Grid.RowDefinitions>
@@ -40,14 +41,17 @@
 
         <!-- Events List -->
         <Border Grid.Row="1"
-                Style="{StaticResource SectionBorderStyle}"
+                Background="{StaticResource ColorSectionBg}"
+                CornerRadius="10"
                 Padding="15">
             <ListBox ItemsSource="{Binding Broadcasts}"
                      SelectedItem="{Binding SelectedBroadcast}"
                      Style="{StaticResource TransparentListBoxStyle}">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <Border Style="{StaticResource CardBorderStyle}">
+                        <Border Background="{StaticResource ColorInputBg}"
+                                Padding="15" Margin="0,5"
+                                CornerRadius="8">
                             <Border.ContextMenu>
                                 <ContextMenu>
                                     <MenuItem Header="Delete"
