@@ -58,9 +58,10 @@ namespace StreamLoftApp.Services
                         loginResponse.AccessToken,
                         loginResponse.RefreshToken,
                         DateTime.UtcNow.AddDays(3));
+                    return loginResponse;
                 }
                 
-                return loginResponse;
+                throw new Exception("Login failed: invalid response");
             }
             
             throw new Exception($"Login failed: {response.StatusCode}");
@@ -120,7 +121,8 @@ namespace StreamLoftApp.Services
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<UserResponse>(content);
+                return JsonConvert.DeserializeObject<UserResponse>(content)
+                    ?? throw new Exception("Failed to get user: invalid response");
             }
             
             throw new Exception($"Failed to get user: {response.StatusCode}");
@@ -179,7 +181,8 @@ namespace StreamLoftApp.Services
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<StreamStatusResponse>(content);
+                return JsonConvert.DeserializeObject<StreamStatusResponse>(content)
+                    ?? throw new Exception("Failed to get stream status: invalid response");
             }
             
             throw new Exception($"Failed to get stream status: {response.StatusCode}");
