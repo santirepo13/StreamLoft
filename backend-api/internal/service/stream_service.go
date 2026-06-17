@@ -24,11 +24,12 @@ type StreamEvent struct {
 }
 
 type StreamService struct {
-	userRepo       interfaces.UserRepository
-	broadcastRepo  interfaces.BroadcastSessionRepository
-	workerSvc      interfaces.WorkerManager
-	liveUsers      sync.Map
-	subscribers    sync.Map
+	userRepo      interfaces.UserRepository
+	broadcastRepo interfaces.BroadcastSessionRepository
+	workerSvc     interfaces.WorkerManager
+	liveUsers     sync.Map // streamKey → LiveStreamStatus
+	userLiveKeys  sync.Map // userID → streamKey
+	subscribers   sync.Map
 }
 
 func NewStreamService(
@@ -44,29 +45,28 @@ func NewStreamService(
 }
 
 type StreamStartRequest struct {
-	StreamKey     string `json:"stream_key"`
-	DetectedBitrate int  `json:"detected_bitrate"`
+	StreamKey      string `json:"stream_key"`
+	DetectedBitrate int   `json:"detected_bitrate"`
 }
 
 type StreamStatusResponse struct {
-	Status        string `json:"status"`
+	Status         string `json:"status"`
 	BitrateWarning bool   `json:"bitrate_warning"`
 }
 
-func (s *StreamService) StartStream(ctx context.Context, streamKey string, detectedBitrate int) error {
-	// Log callback verification
+func (s *StreamService) StartStream(ctx context.Context, streamKey string, detectedBitrate int) (int, error) {
 	log.Printf("STREAM_CALLBACK: Received /stream/start callback with stream_key=%s, detected_bitrate=%d", streamKey, detectedBitrate)
-	
+
 	user, err := s.userRepo.GetByStreamKey(ctx, streamKey)
 	if err != nil {
 		log.Printf("STREAM_CALLBACK_ERROR: Failed to get user by stream_key=%s: %v", streamKey, err)
-		return err
+		return 0, err
 	}
 	if user == nil {
 		log.Printf("STREAM_CALLBACK_ERROR: User not found for stream_key=%s", streamKey)
-		return fmt.Errorf("user not found for stream key")
+		return 0, fmt.Errorf("user not found for stream key")
 	}
-	
+
 	log.Printf("STREAM_CALLBACK_SUCCESS: Found user_id=%d, name=%s for stream_key=%s", user.ID, user.Name, streamKey)
 
 	bitrateWarning := false
@@ -74,20 +74,16 @@ func (s *StreamService) StartStream(ctx context.Context, streamKey string, detec
 		threshold := float64(*user.Bitrate) * 0.7
 		if float64(detectedBitrate) < threshold {
 			bitrateWarning = true
-			log.Printf("STREAM_CALLBACK_BITRATE_WARNING: User %d detected bitrate %d < threshold %f (configured: %d)", 
+			log.Printf("STREAM_CALLBACK_BITRATE_WARNING: User %d detected bitrate %d < threshold %f (configured: %d)",
 				user.ID, detectedBitrate, threshold, *user.Bitrate)
 		}
 	}
 
-	// Clean up any stale live status for this user (missed on_unpublish)
-	s.liveUsers.Range(func(key, value interface{}) bool {
-		ls := value.(LiveStreamStatus)
-		if ls.UserID == user.ID {
-			s.liveUsers.Delete(key)
-			log.Printf("STREAM_CALLBACK_CLEANUP: Removed stale live entry for user %d", user.ID)
-		}
-		return true
-	})
+	if oldStreamKey, ok := s.userLiveKeys.Load(user.ID); ok {
+		s.liveUsers.Delete(oldStreamKey)
+		s.userLiveKeys.Delete(user.ID)
+		log.Printf("STREAM_CALLBACK_CLEANUP: Removed stale live entry for user %d (old stream key: %s)", user.ID, oldStreamKey)
+	}
 
 	s.liveUsers.Store(streamKey, LiveStreamStatus{
 		UserID:         user.ID,
@@ -95,22 +91,28 @@ func (s *StreamService) StartStream(ctx context.Context, streamKey string, detec
 		BitrateWarning: bitrateWarning,
 		StartTime:      time.Now(),
 	})
+	s.userLiveKeys.Store(user.ID, streamKey)
 
 	s.Notify(user.ID, StreamEvent{Type: "start", Status: "live", BitrateWarning: bitrateWarning})
 
-	log.Printf("STREAM_CALLBACK_USER_LIVE: Marked user %d as live with stream_key=%s, bitrate_warning=%t", 
+	log.Printf("STREAM_CALLBACK_USER_LIVE: Marked user %d as live with stream_key=%s, bitrate_warning=%t",
 		user.ID, streamKey, bitrateWarning)
 
-	destinations, err := s.userRepo.GetDestinationsWithStreamKey(ctx, user.ID)
+	return user.ID, nil
+}
+
+func (s *StreamService) StartForwardingWorkers(ctx context.Context, userID int) {
+	time.Sleep(500 * time.Millisecond)
+
+	destinations, err := s.userRepo.GetDestinationsWithStreamKey(ctx, userID)
 	if err != nil {
-		log.Printf("STREAM_CALLBACK_ERROR: Failed to get destinations for user %d: %v", user.ID, err)
-		return err
+		log.Printf("STREAM_CALLBACK_ERROR: Failed to get destinations for user %d: %v", userID, err)
+		return
 	}
 
-	log.Printf("STREAM_CALLBACK_DESTINATIONS: Found %d destinations with stream keys for user %d", len(destinations), user.ID)
+	log.Printf("STREAM_CALLBACK_DESTINATIONS: Found %d destinations with stream keys for user %d", len(destinations), userID)
 
-	// Close any stale active sessions before creating new ones (missed on_unpublish)
-	activeSessions, err := s.broadcastRepo.GetActiveByUserID(ctx, user.ID)
+	activeSessions, err := s.broadcastRepo.GetActiveByUserID(ctx, userID)
 	if err != nil {
 		log.Printf("STREAM_CALLBACK_WARNING: Failed to get active sessions for cleanup: %v", err)
 	} else {
@@ -125,38 +127,31 @@ func (s *StreamService) StartStream(ctx context.Context, streamKey string, detec
 		}
 	}
 
-	// Give SRS time to initialize the HTTP-FLV remux endpoint before
-	// ffmpeg workers try to pull from it. Without this delay a race
-	// condition causes ffmpeg to hang on the first publish.
-	time.Sleep(500 * time.Millisecond)
-
 	for _, dest := range destinations {
-		_, err := s.broadcastRepo.Create(ctx, user.ID, dest.ID)
+		_, err := s.broadcastRepo.Create(ctx, userID, dest.ID)
 		if err != nil {
-			log.Printf("STREAM_CALLBACK_BROADCAST_ERROR: Failed to create broadcast session for user %d, destination %d: %v", 
-				user.ID, dest.ID, err)
+			log.Printf("STREAM_CALLBACK_BROADCAST_ERROR: Failed to create broadcast session for user %d, destination %d: %v",
+				userID, dest.ID, err)
 			continue
 		}
 
-		if err := s.workerSvc.StartWorker(ctx, user.ID, dest.ID); err != nil {
-			log.Printf("STREAM_CALLBACK_WORKER_ERROR: Failed to start worker for user %d, destination %d: %v", 
-				user.ID, dest.ID, err)
+		if err := s.workerSvc.StartWorker(ctx, userID, dest.ID); err != nil {
+			log.Printf("STREAM_CALLBACK_WORKER_ERROR: Failed to start worker for user %d, destination %d: %v",
+				userID, dest.ID, err)
 			continue
 		}
-		
-		log.Printf("STREAM_CALLBACK_WORKER_SUCCESS: Started forwarding worker for user %d, destination %d (%s)", 
-			user.ID, dest.ID, dest.Destination.Name)
+
+		log.Printf("STREAM_CALLBACK_WORKER_SUCCESS: Started forwarding worker for user %d, destination %d (%s)",
+			userID, dest.ID, dest.Destination.Name)
 	}
 
-	log.Printf("STREAM_CALLBACK_COMPLETE: Successfully processed stream start for user %d, started %d forwarding workers", 
-		user.ID, len(destinations))
-	
-	return nil
+	log.Printf("STREAM_CALLBACK_COMPLETE: Successfully started %d forwarding workers for user %d",
+		len(destinations), userID)
 }
 
 func (s *StreamService) StopStream(ctx context.Context, streamKey string) error {
 	log.Printf("STREAM_STOP: Received stream stop for stream_key=%s", streamKey)
-	
+
 	user, err := s.userRepo.GetByStreamKey(ctx, streamKey)
 	if err != nil {
 		log.Printf("STREAM_STOP_ERROR: Failed to get user by stream_key=%s: %v", streamKey, err)
@@ -170,6 +165,7 @@ func (s *StreamService) StopStream(ctx context.Context, streamKey string) error 
 	log.Printf("STREAM_STOP_SUCCESS: Found user_id=%d for stream_key=%s", user.ID, streamKey)
 
 	s.liveUsers.Delete(streamKey)
+	s.userLiveKeys.Delete(user.ID)
 	s.Notify(user.ID, StreamEvent{Type: "stop", Status: "offline", BitrateWarning: false})
 	log.Printf("STREAM_STOP_USER_LIVE: Removed user %d from live streams", user.ID)
 
@@ -183,7 +179,7 @@ func (s *StreamService) StopStream(ctx context.Context, streamKey string) error 
 	}
 
 	log.Printf("STREAM_STOP_SESSIONS: Found %d active sessions for user %d to close", len(sessions), user.ID)
-	
+
 	now := time.Now()
 	for _, session := range sessions {
 		duration := int(now.Sub(session.StartedAt).Minutes())
@@ -200,53 +196,39 @@ func (s *StreamService) StopStream(ctx context.Context, streamKey string) error 
 }
 
 func (s *StreamService) GetStatus(ctx context.Context, userID int) (*StreamStatusResponse, error) {
-	var status string
-	var bitrateWarning bool
-
-	s.liveUsers.Range(func(key, value interface{}) bool {
-		liveStatus := value.(LiveStreamStatus)
-		if liveStatus.UserID == userID {
-			status = "live"
-			bitrateWarning = liveStatus.BitrateWarning
-			return false
-		}
-		return true
-	})
-
-	if status == "" {
-		status = "offline"
+	streamKey, ok := s.userLiveKeys.Load(userID)
+	if !ok {
+		return &StreamStatusResponse{Status: "offline", BitrateWarning: false}, nil
 	}
 
+	ls, ok := s.liveUsers.Load(streamKey)
+	if !ok {
+		return &StreamStatusResponse{Status: "offline", BitrateWarning: false}, nil
+	}
+
+	liveStatus := ls.(LiveStreamStatus)
 	return &StreamStatusResponse{
-		Status:        status,
-		BitrateWarning: bitrateWarning,
+		Status:         "live",
+		BitrateWarning: liveStatus.BitrateWarning,
 	}, nil
 }
 
 func (s *StreamService) IsUserLive(userID int) bool {
-	var isLive bool
-	s.liveUsers.Range(func(key, value interface{}) bool {
-		liveStatus := value.(LiveStreamStatus)
-		if liveStatus.UserID == userID {
-			isLive = true
-			return false
-		}
-		return true
-	})
-	return isLive
+	_, ok := s.userLiveKeys.Load(userID)
+	return ok
 }
 
 func (s *StreamService) GetLiveStatusForUser(userID int) *LiveStreamStatus {
-	var status *LiveStreamStatus
-	s.liveUsers.Range(func(key, value interface{}) bool {
-		liveStatus := value.(LiveStreamStatus)
-		if liveStatus.UserID == userID {
-			status = &liveStatus
-			return false
-		}
-		return true
-	})
-	return status
+	streamKey, ok := s.userLiveKeys.Load(userID)
+	if !ok {
+		return nil
+	}
+	ls, ok := s.liveUsers.Load(streamKey)
+	if !ok {
+		return nil
+	}
+	status := ls.(LiveStreamStatus)
+	return &status
 }
 
 func (s *StreamService) Subscribe(userID int) chan StreamEvent {

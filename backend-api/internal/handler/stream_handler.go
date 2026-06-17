@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -33,7 +34,7 @@ func NewStreamHandler(streamSvc *service.StreamService, userSvc *service.UserSer
 
 type StreamStartRequest struct {
 	StreamKey       string `json:"stream_key"`
-	Stream           string `json:"stream"`
+	Stream          string `json:"stream"`
 	DetectedBitrate int    `json:"detected_bitrate"`
 }
 
@@ -41,14 +42,18 @@ type UpdateBitrateRequest struct {
 	Bitrate int `json:"bitrate" binding:"required"`
 }
 
-func (h *StreamHandler) Start(c *gin.Context) {
-	log.Printf("STREAM_HANDLER_START: Received POST /stream/start request")
-	
-	// Try to get stream key from query params first (SRS callback format: ?stream=KEY)
+func parseStreamKey(c *gin.Context) (string, int) {
 	streamKey := c.Query("stream")
 	detectedBitrate := 0
-	
-	// Also check JSON body for backward compatibility or other callers
+
+	if streamKey == "" {
+		if v := c.PostForm("stream"); v != "" {
+			streamKey = v
+		} else if v := c.PostForm("Stream"); v != "" {
+			streamKey = v
+		}
+	}
+
 	var req StreamStartRequest
 	if err := c.ShouldBindJSON(&req); err == nil {
 		if streamKey == "" && req.StreamKey != "" {
@@ -62,6 +67,14 @@ func (h *StreamHandler) Start(c *gin.Context) {
 		}
 	}
 
+	return streamKey, detectedBitrate
+}
+
+func (h *StreamHandler) Start(c *gin.Context) {
+	log.Printf("STREAM_HANDLER_START: Received POST /stream/start request")
+
+	streamKey, detectedBitrate := parseStreamKey(c)
+
 	log.Printf("STREAM_HANDLER_INFO: Processing stream_key=%s, detected_bitrate=%d", streamKey, detectedBitrate)
 
 	if streamKey == "" {
@@ -70,32 +83,24 @@ func (h *StreamHandler) Start(c *gin.Context) {
 		return
 	}
 
-	if err := h.streamService.StartStream(c.Request.Context(), streamKey, detectedBitrate); err != nil {
+	userID, err := h.streamService.StartStream(c.Request.Context(), streamKey, detectedBitrate)
+	if err != nil {
 		log.Printf("STREAM_HANDLER_ERROR: Failed to start stream: %v", err)
 		errors.RespondWithError(c, errors.Internal("failed to start stream: "+err.Error()))
 		return
 	}
 
-	log.Printf("STREAM_HANDLER_SUCCESS: Stream processing completed successfully")
 	c.JSON(http.StatusOK, gin.H{"code": 0})
+
+	go h.streamService.StartForwardingWorkers(context.Background(), userID)
+
+	log.Printf("STREAM_HANDLER_SUCCESS: Responded 200, workers starting asynchronously for user %d", userID)
 }
 
 func (h *StreamHandler) Stop(c *gin.Context) {
 	log.Printf("STREAM_HANDLER_STOP: Received POST /stream/stop request")
-	
-	// Try to get stream key from query params first (SRS callback format: ?stream=KEY)
-	streamKey := c.Query("stream")
-	
-	// Also check JSON body for backward compatibility or other callers
-	var req StreamStartRequest
-	if err := c.ShouldBindJSON(&req); err == nil {
-		if streamKey == "" && req.StreamKey != "" {
-			streamKey = req.StreamKey
-		}
-		if streamKey == "" && req.Stream != "" {
-			streamKey = req.Stream
-		}
-	}
+
+	streamKey, _ := parseStreamKey(c)
 
 	log.Printf("STREAM_HANDLER_INFO: Processing stream_key=%s for stop", streamKey)
 

@@ -5,7 +5,7 @@
 -- Examples:
 -- 1. Create user with numeric_id=100
 INSERT INTO users (numeric_id, name)
-VALUES ('1007054088', 'Kevin Restrepo');
+VALUES ('1017274212', 'Valentina Rivera');
 
 -- 2. Create user with numeric_id=200
 INSERT INTO users (numeric_id, name)
