@@ -38,7 +38,7 @@ func New() (*Config, error) {
 		EncryptionKeyPath: "/opt/StreamLoft/streamloft_master.key",
 		DatabasePort:      5432,
 		DatabaseName:      "streamloft",
-		APIPort:           "8080",
+		APIPort:           "10002",
 		RTMPURL:           "rtmp://74.81.35.20/live",
 		SRSURL:            "http://74.81.35.20:8081",
 		LogLevel:          "info",

@@ -1,5 +1,5 @@
 # StreamLoft API Documentation
-## Base URL: http://172.86.73.79:8080
+## Base URL: http://172.86.73.79:10002
 
 ### Authentication Endpoints
 - POST /auth/login

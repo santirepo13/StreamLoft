@@ -42,8 +42,8 @@ http_server {
 vhost __defaultVhost__ {
     http_hooks {
         enabled         on;
-        on_publish      http://74.81.35.20:8080/stream/start;
-        on_unpublish    http://74.81.35.20:8080/stream/stop;
+on_publish      http://74.81.35.20:10002/stream/start;
+    on_unpublish    http://74.81.35.20:10002/stream/stop;
     }
 
     http_remux {
@@ -94,7 +94,7 @@ DATABASE_PORT=5432
 DATABASE_USER=postgres
 DATABASE_PASSWORD=L...
 DATABASE_NAME=streamloft
-API_PORT=8080
+API_PORT=10002
 SRS_URL=http://74.81.35.20:8081
 RTMP_URL=rtmp://74.81.35.20/live
 JWT_SECRET=ncTuR7x67SX1Kl6PIWIH1eYeQT46gLOTEN1TOonMsQM=
@@ -146,7 +146,7 @@ ps aux | grep streamloft
 
 check ports
 
-ss -lntp | grep 8080
+ss -lntp | grep 10002
 
 Check status:
 
@@ -232,7 +232,7 @@ curl http://74.81.35.20:8081/
 
 Check API health:
 
-curl http://74.81.35.20:8080/health
+curl http://74.81.35.20:10002/health
 
 Expected response: {"status":"ok"}
 
