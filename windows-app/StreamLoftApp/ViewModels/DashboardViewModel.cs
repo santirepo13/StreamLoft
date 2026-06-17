@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -295,7 +296,7 @@ namespace StreamLoftApp.ViewModels
         {
             if (!string.IsNullOrEmpty(RtmpUrl))
             {
-                Clipboard.SetText(RtmpUrl);
+                SafeSetClipboardText(RtmpUrl);
             }
         }
 
@@ -303,7 +304,24 @@ namespace StreamLoftApp.ViewModels
         {
             if (!string.IsNullOrEmpty(StreamKey))
             {
-                Clipboard.SetText(StreamKey);
+                SafeSetClipboardText(StreamKey);
+            }
+        }
+
+        private static void SafeSetClipboardText(string text)
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                try
+                {
+                    Clipboard.SetText(text);
+                    return;
+                }
+                catch (COMException ex) when ((uint)ex.ErrorCode == 0x800401D0)
+                {
+                    if (i == 4) throw;
+                    Thread.Sleep(50);
+                }
             }
         }
 
