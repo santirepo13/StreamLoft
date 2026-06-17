@@ -11,10 +11,10 @@ namespace StreamLoftApp.ViewModels
         private readonly int _destinationId;
         private readonly string _destinationName;
 
-        private string _streamKeyInput;
+        private string _streamKeyInput = null!;
         private bool _isConfigured;
         private bool _isSaving;
-        private string _errorMessage;
+        private string _errorMessage = null!;
         private bool _showSavedIndicator;
         private bool _bitLimited;
 
@@ -69,9 +69,9 @@ namespace StreamLoftApp.ViewModels
         public ICommand SaveCommand { get; }
         public ICommand CancelCommand { get; }
 
-        public event Action OnSaved;
-        public event Action OnCancel;
-        public event Action OnDestinationSaved;
+        public event Action? OnSaved;
+        public event Action? OnCancel;
+        public event Action? OnDestinationSaved;
 
         public DestinationViewModel(int destinationId, string destinationName, bool isConfigured, string streamKey, bool bitLimited = false)
         {

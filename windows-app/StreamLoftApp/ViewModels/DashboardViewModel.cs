@@ -16,11 +16,11 @@ namespace StreamLoftApp.ViewModels
     public class DashboardViewModel : ViewModelBase
     {
         private readonly ApiService _apiService;
-        private CancellationTokenSource _sseCts;
-        private Task _sseTask;
+        private CancellationTokenSource? _sseCts;
+        private Task? _sseTask;
 
-        private string _rtmpUrl;
-        private string _streamKey;
+        private string _rtmpUrl = null!;
+        private string _streamKey = null!;
         private bool _isLive;
         private bool _bitrateWarning;
         private bool _isLoading;
@@ -99,12 +99,14 @@ namespace StreamLoftApp.ViewModels
         public ICommand EventsCommand { get; }
         public ICommand UpdateBitrateCommand { get; }
 
-        public event Action<DestinationItem> OnDestinationClick;
-        public event Action OnEventsClick;
-        public event Action OnLogout;
-        public event Action OnDestinationSaved;
-        public event Action<int> OnBitrateUpdated;
-        public event Action<DestinationItem, bool> OnDestinationToggled;
+        public void NotifyDestinationSaved() => OnDestinationSaved?.Invoke();
+
+        public event Action<DestinationItem>? OnDestinationClick;
+        public event Action? OnEventsClick;
+        public event Action? OnLogout;
+        public event Action? OnDestinationSaved;
+        public event Action<int>? OnBitrateUpdated;
+        public event Action<DestinationItem, bool>? OnDestinationToggled;
 
         public void RefreshDestinations()
         {

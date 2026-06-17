@@ -7,7 +7,7 @@ namespace StreamLoftApp.Services
     public class TokenStorageService
     {
         private readonly string _tokenFilePath;
-        private TokenData _cachedToken;
+        private TokenData? _cachedToken;
 
         public TokenStorageService()
         {

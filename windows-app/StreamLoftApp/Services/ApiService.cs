@@ -14,7 +14,7 @@ namespace StreamLoftApp.Services
     {
         private readonly HttpClient _httpClient;
         private readonly TokenStorageService _tokenStorage;
-        private string _accessToken;
+        private string? _accessToken;
 
         public ApiService(TokenStorageService tokenStorage)
         {
@@ -55,8 +55,8 @@ namespace StreamLoftApp.Services
                 {
                     _accessToken = loginResponse.AccessToken;
                     _tokenStorage.SaveTokens(
-                        loginResponse.AccessToken,
-                        loginResponse.RefreshToken,
+                        loginResponse.AccessToken ?? "",
+                        loginResponse.RefreshToken ?? "",
                         DateTime.UtcNow.AddDays(3));
                     return loginResponse;
                 }
@@ -87,11 +87,11 @@ namespace StreamLoftApp.Services
                 {
                     _accessToken = refreshResponse.AccessToken;
                     _tokenStorage.SaveTokens(
-                        refreshResponse.AccessToken,
-                        token.RefreshToken,
+                        refreshResponse.AccessToken ?? "",
+                        token.RefreshToken ?? "",
                         DateTime.UtcNow.AddDays(3));
                     
-                    return refreshResponse.AccessToken;
+                    return refreshResponse.AccessToken!;
                 }
             }
 
@@ -241,7 +241,7 @@ namespace StreamLoftApp.Services
             SetAuthHeader();
 
             using var request = new HttpRequestMessage(HttpMethod.Get, "/user/stream/events");
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken!);
 
             using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
             response.EnsureSuccessStatusCode();

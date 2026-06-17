@@ -7,7 +7,7 @@ namespace StreamLoftApp.Views.Controls;
 
 public partial class LoadingOverlay : UserControl
 {
-    public static readonly DependencyProperty IsVisibleProperty =
+    public new static readonly DependencyProperty IsVisibleProperty =
         DependencyProperty.Register(nameof(IsVisible), typeof(bool), typeof(LoadingOverlay),
             new PropertyMetadata(false, OnIsVisibleChanged));
 
@@ -17,7 +17,7 @@ public partial class LoadingOverlay : UserControl
 
     private bool _initialized;
 
-    public bool IsVisible
+    public new bool IsVisible
     {
         get => (bool)GetValue(IsVisibleProperty);
         set => SetValue(IsVisibleProperty, value);

@@ -26,10 +26,10 @@ namespace StreamLoftApp.Views
 
         private void NavigateToDestination(DestinationItem destination)
         {
-            var destWindow = new DestinationView(destination.Id, destination.Name, destination.Configured, destination.StreamKey, destination.BitLimited == 1);
+            var destWindow = new DestinationView(destination.Id, destination.Name ?? "", destination.Configured, destination.StreamKey ?? "", destination.BitLimited == 1);
             destWindow.ShowDialog();
-            
-            // Refresh data after returning
+
+            _viewModel.NotifyDestinationSaved();
             _viewModel.StartSSE();
         }
 

@@ -5,8 +5,8 @@ namespace StreamLoftApp.Configuration
 {
     public class AppSettings
     {
-        private static AppSettings _instance;
-        public string ApiBaseUrl { get; set; }
+        private static AppSettings _instance = null!;
+        public string ApiBaseUrl { get; set; } = string.Empty;
 
         public static AppSettings Instance
         {

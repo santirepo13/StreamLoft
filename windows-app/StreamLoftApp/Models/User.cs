@@ -5,9 +5,9 @@ namespace StreamLoftApp.Models
 {
     public class User : INotifyPropertyChanged
     {
-        private string _userId;
-        private string _name;
-        private string _streamKey;
+        private string _userId = null!;
+        private string _name = null!;
+        private string _streamKey = null!;
 
         public string UserId
         {
@@ -27,9 +27,9 @@ namespace StreamLoftApp.Models
             set { _streamKey = value; OnPropertyChanged(); }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }

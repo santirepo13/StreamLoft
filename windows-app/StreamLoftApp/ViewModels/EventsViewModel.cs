@@ -12,7 +12,7 @@ namespace StreamLoftApp.ViewModels
     {
         private readonly ApiService _apiService;
         private bool _isLoading;
-        private BroadcastGroupItem _selectedBroadcast;
+        private BroadcastGroupItem _selectedBroadcast = null!;
 
         public bool IsLoading
         {
@@ -32,7 +32,7 @@ namespace StreamLoftApp.ViewModels
         public ICommand BackCommand { get; }
         public ICommand DeleteCommand { get; }
 
-        public event Action OnBack;
+        public event Action? OnBack;
 
         public EventsViewModel()
         {
@@ -42,7 +42,7 @@ namespace StreamLoftApp.ViewModels
             BackCommand = new RelayCommand(_ => OnBack?.Invoke());
             DeleteCommand = new RelayCommand<BroadcastGroupItem>(async item => await DeleteBroadcastAsync(item), item => item != null);
 
-            LoadBroadcastsAsync();
+            _ = LoadBroadcastsAsync();
         }
 
         private async System.Threading.Tasks.Task LoadBroadcastsAsync()
@@ -80,7 +80,7 @@ namespace StreamLoftApp.ViewModels
                 .OfType<System.Windows.Window>()
                 .FirstOrDefault(w => w.IsActive) ?? Application.Current.MainWindow;
 
-            var dialog = new DeleteConfirmDialog(item.DestinationName, item.Date, item.DurationText)
+            var dialog = new DeleteConfirmDialog(item.DestinationName ?? "", item.Date ?? "", item.DurationText ?? "")
             {
                 Owner = owner
             };
@@ -92,7 +92,7 @@ namespace StreamLoftApp.ViewModels
 
             try
             {
-                await _apiService.DeleteBroadcastAsync(item.DestinationName, item.Date);
+                await _apiService.DeleteBroadcastAsync(item.DestinationName ?? "", item.Date ?? "");
                 Broadcasts.Remove(item);
             }
             catch (Exception ex)

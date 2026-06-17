@@ -5,10 +5,8 @@ namespace StreamLoftApp.Services
 {
     public class NavigationService
     {
-        private static NavigationService _instance;
+        private static NavigationService _instance = null!;
         public static NavigationService Instance => _instance ??= new NavigationService();
-
-        public event Action<Type> NavigateRequested;
 
         public void NavigateTo<T>() where T : Window, new()
         {

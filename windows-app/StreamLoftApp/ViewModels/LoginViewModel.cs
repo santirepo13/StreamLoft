@@ -11,8 +11,8 @@ namespace StreamLoftApp.ViewModels
         private readonly TokenStorageService _tokenStorage;
         private readonly MachineIdService _machineIdService;
 
-        private string _userId;
-        private string _errorMessage;
+        private string _userId = null!;
+        private string _errorMessage = null!;
         private bool _isLoading;
 
         public string UserId
@@ -42,8 +42,8 @@ namespace StreamLoftApp.ViewModels
         public ICommand LoginCommand { get; }
         public ICommand AutoLoginCommand { get; }
 
-        public event Action OnLoginSuccess;
-        public event Action<string> OnLoginFailed;
+        public event Action? OnLoginSuccess;
+        public event Action<string>? OnLoginFailed;
 
         public LoginViewModel()
         {

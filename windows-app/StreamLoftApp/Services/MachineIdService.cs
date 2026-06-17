@@ -7,7 +7,7 @@ namespace StreamLoftApp.Services
     public class MachineIdService
     {
         private readonly string _machineIdFilePath;
-        private string _cachedMachineId;
+        private string _cachedMachineId = null!;
 
         public MachineIdService()
         {

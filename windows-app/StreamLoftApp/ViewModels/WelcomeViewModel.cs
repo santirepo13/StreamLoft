@@ -7,8 +7,8 @@ namespace StreamLoftApp.ViewModels
     public class WelcomeViewModel : ViewModelBase
     {
         private readonly ApiService _apiService;
-        private string _userName;
-        private string _numericId;
+        private string _userName = null!;
+        private string _numericId = null!;
         private bool _isLoading;
 
         public string UserName
@@ -32,8 +32,8 @@ namespace StreamLoftApp.ViewModels
         public ICommand ProceedCommand { get; }
         public ICommand LogoutCommand { get; }
 
-        public event Action OnProceed;
-        public event Action OnLogout;
+        public event Action? OnProceed;
+        public event Action? OnLogout;
 
         public WelcomeViewModel()
         {
