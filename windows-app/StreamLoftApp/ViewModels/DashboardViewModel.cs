@@ -404,12 +404,12 @@ namespace StreamLoftApp.ViewModels
     public class DestinationItem
     {
         public int Id { get; set; }
-        public string Name { get; set; }
-        public string RtmpUrl { get; set; }
+        public string? Name { get; set; }
+        public string? RtmpUrl { get; set; }
         public bool Configured { get; set; }
-        public int Enabled { get; set; } // 1=true, 0=false
+        public int Enabled { get; set; }
         public bool IsActive { get; set; }
-        public string StreamKey { get; set; }
+        public string? StreamKey { get; set; }
         public int BitLimited { get; set; }
     }
 }

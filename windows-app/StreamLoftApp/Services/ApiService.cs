@@ -280,51 +280,51 @@ namespace StreamLoftApp.Services
     public class LoginResponse
     {
         [JsonProperty("numeric_id")]
-        public string NumericId { get; set; }
+        public string? NumericId { get; set; }
 
         [JsonProperty("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         [JsonProperty("access_token")]
-        public string AccessToken { get; set; }
+        public string? AccessToken { get; set; }
 
         [JsonProperty("refresh_token")]
-        public string RefreshToken { get; set; }
+        public string? RefreshToken { get; set; }
 
         [JsonProperty("stream_key")]
-        public string StreamKey { get; set; }
+        public string? StreamKey { get; set; }
 
         [JsonProperty("rtmp_url")]
-        public string RtmpUrl { get; set; }
+        public string? RtmpUrl { get; set; }
 
         [JsonProperty("bitrate")]
         public int? Bitrate { get; set; }
 
-        public List<DestinationResponse> Destinations { get; set; }
+        public List<DestinationResponse>? Destinations { get; set; }
     }
 
     public class RefreshResponse
     {
-        public string AccessToken { get; set; }
+        public string? AccessToken { get; set; }
     }
 
     public class UserResponse
     {
         [JsonProperty("numeric_id")]
-        public string NumericId { get; set; }
+        public string? NumericId { get; set; }
 
         [JsonProperty("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         [JsonProperty("stream_key")]
-        public string StreamKey { get; set; }
+        public string? StreamKey { get; set; }
 
         [JsonProperty("rtmp_url")]
-        public string RtmpUrl { get; set; }
+        public string? RtmpUrl { get; set; }
 
         [JsonProperty("bitrate")]
         public int? Bitrate { get; set; }
-        public List<DestinationResponse> Destinations { get; set; }
+        public List<DestinationResponse>? Destinations { get; set; }
     }
 
     public class DestinationResponse
@@ -332,10 +332,10 @@ namespace StreamLoftApp.Services
         public int Id { get; set; }
 
         [JsonProperty("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         [JsonProperty("rtmp_url")]
-        public string RtmpUrl { get; set; }
+        public string? RtmpUrl { get; set; }
 
         public bool Configured { get; set; }
 
@@ -345,7 +345,7 @@ namespace StreamLoftApp.Services
         public bool IsActive { get; set; }
 
         [JsonProperty("stream_key")]
-        public string StreamKey { get; set; }
+        public string? StreamKey { get; set; }
 
         [JsonProperty("bit_limited")]
         public int BitLimited { get; set; }
@@ -354,19 +354,19 @@ namespace StreamLoftApp.Services
     public class DestinationsResponse
     {
         [JsonProperty("destinations")]
-        public List<DestinationResponse> Destinations { get; set; }
+        public List<DestinationResponse>? Destinations { get; set; }
     }
 
     public class BroadcastsResponse
     {
         [JsonProperty("broadcasts")]
-        public List<BroadcastGroupResponse> Broadcasts { get; set; }
+        public List<BroadcastGroupResponse>? Broadcasts { get; set; }
     }
 
     public class StreamStatusResponse
     {
         [JsonProperty("status")]
-        public string Status { get; set; }
+        public string? Status { get; set; }
 
         [JsonProperty("bitrate_warning")]
         public bool BitrateWarning { get; set; }
@@ -375,10 +375,10 @@ namespace StreamLoftApp.Services
     public class StreamEvent
     {
         [JsonProperty("type")]
-        public string Type { get; set; }
+        public string? Type { get; set; }
 
         [JsonProperty("status")]
-        public string Status { get; set; }
+        public string? Status { get; set; }
 
         [JsonProperty("bitrate_warning")]
         public bool BitrateWarning { get; set; }
@@ -387,9 +387,9 @@ namespace StreamLoftApp.Services
 	public class BroadcastGroupResponse
 	{
 		[JsonProperty("destination_name")]
-		public string DestinationName { get; set; }
+		public string? DestinationName { get; set; }
 
-		public string Date { get; set; }
+		public string? Date { get; set; }
 
 		[JsonProperty("total_minutes")]
 		public int TotalMinutes { get; set; }

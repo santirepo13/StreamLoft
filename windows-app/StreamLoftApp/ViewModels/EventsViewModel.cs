@@ -108,8 +108,8 @@ namespace StreamLoftApp.ViewModels
 
     public class BroadcastGroupItem
     {
-        public string DestinationName { get; set; }
-        public string Date { get; set; }
-        public string DurationText { get; set; }
+        public string? DestinationName { get; set; }
+        public string? Date { get; set; }
+        public string? DurationText { get; set; }
     }
 }
