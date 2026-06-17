@@ -3,7 +3,7 @@
 
 ### Media Server (74.81.35.20)
 - SRS Media Server
-- RTMP Port: 1935
+- RTMP Port: 10004
 - HTTP Callbacks: 74.81.35.20:10002
 
 ### Go API (74.81.35.20)

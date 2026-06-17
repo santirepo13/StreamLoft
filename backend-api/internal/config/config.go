@@ -39,8 +39,8 @@ func New() (*Config, error) {
 		DatabasePort:      5432,
 		DatabaseName:      "streamloft",
 		APIPort:           "10002",
-		RTMPURL:           "rtmp://74.81.35.20/live",
-		SRSURL:            "http://74.81.35.20:8081",
+		RTMPURL:           "rtmp://74.81.35.20:10004/live",
+		SRSURL:            "http://74.81.35.20:10003",
 		LogLevel:          "info",
 	}
 

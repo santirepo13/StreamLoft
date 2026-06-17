@@ -22,7 +22,7 @@ srs.conf :
 ``
 # SRS Media Server Configuration for StreamLoft
 
-listen              1935;
+listen              10004;
 max_connections     1000;
 daemon              on;
 pid                 ./objs/srs.pid;
@@ -35,7 +35,7 @@ http_api {
 
 http_server {
     enabled         on;
-    listen          8081;
+    listen          10003;
     dir             ./objs/nginx/html;
 }
 
@@ -95,7 +95,7 @@ DATABASE_USER=postgres
 DATABASE_PASSWORD=L...
 DATABASE_NAME=streamloft
 API_PORT=10002
-SRS_URL=http://74.81.35.20:8081
+SRS_URL=http://74.81.35.20:10003
 RTMP_URL=rtmp://74.81.35.20/live
 JWT_SECRET=ncTuR7x67SX1Kl6PIWIH1eYeQT46gLOTEN1TOonMsQM=
 LOG_LEVEL=info
@@ -228,7 +228,7 @@ Or create a desktop shortcut to StreamLoftApp.exe for end users.
 
 Check SRS is running:
 
-curl http://74.81.35.20:8081/
+curl http://74.81.35.20:10003/
 
 Check API health:
 
