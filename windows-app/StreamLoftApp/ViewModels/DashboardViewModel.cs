@@ -19,13 +19,18 @@ namespace StreamLoftApp.ViewModels
         private CancellationTokenSource? _sseCts;
         private Task? _sseTask;
 
+        private string _userName = null!;
         private string _rtmpUrl = null!;
         private string _streamKey = null!;
         private bool _isLive;
-        private bool _bitrateWarning;
         private bool _isLoading;
-        private string _statusText = "Offline";
         private int? _configuredBitrate;
+
+        public string UserName
+        {
+            get => _userName;
+            set => SetProperty(ref _userName, value);
+        }
 
         public string RtmpUrl
         {
@@ -46,7 +51,6 @@ namespace StreamLoftApp.ViewModels
             {
                 if (SetProperty(ref _isLive, value))
                 {
-                    StatusText = value ? "Live" : "Offline";
                     UpdateDestinationsActiveStatus();
                 }
             }
@@ -58,17 +62,10 @@ namespace StreamLoftApp.ViewModels
             {
                 dest.IsActive = dest.Enabled == 1 && dest.Configured && IsLive;
             }
-            // Force ObservableCollection refresh
             var items = Destinations.ToList();
             Destinations.Clear();
             foreach (var item in items)
                 Destinations.Add(item);
-        }
-
-        public bool BitrateWarning
-        {
-            get => _bitrateWarning;
-            set => SetProperty(ref _bitrateWarning, value);
         }
 
         public int? ConfiguredBitrate
@@ -83,12 +80,6 @@ namespace StreamLoftApp.ViewModels
             set => SetProperty(ref _isLoading, value);
         }
 
-        public string StatusText
-        {
-            get => _statusText;
-            set => SetProperty(ref _statusText, value);
-        }
-
         public ObservableCollection<DestinationItem> Destinations { get; } = new ObservableCollection<DestinationItem>();
 
         public ICommand CopyRtmpUrlCommand { get; }
@@ -98,12 +89,14 @@ namespace StreamLoftApp.ViewModels
         public ICommand LogoutCommand { get; }
         public ICommand EventsCommand { get; }
         public ICommand UpdateBitrateCommand { get; }
+        public ICommand SettingsCommand { get; }
 
         public void NotifyDestinationSaved() => OnDestinationSaved?.Invoke();
 
         public event Action<DestinationItem>? OnDestinationClick;
         public event Action? OnEventsClick;
         public event Action? OnLogout;
+        public event Action? OnSettingsClick;
         public event Action? OnDestinationSaved;
         public event Action<int>? OnBitrateUpdated;
         public event Action<DestinationItem, bool>? OnDestinationToggled;
@@ -147,8 +140,7 @@ namespace StreamLoftApp.ViewModels
                             Configured = dest.Configured,
                             Enabled = dest.Enabled,
                             StreamKey = dest.StreamKey ?? "",
-                            IsActive = dest.Enabled == 1 && dest.Configured && IsLive,
-                            BitLimited = dest.BitLimited
+                            IsActive = dest.Enabled == 1 && dest.Configured && IsLive
                         });
                     }
                 });
@@ -163,6 +155,7 @@ namespace StreamLoftApp.ViewModels
         {
             _apiService = new ApiService(new TokenStorageService());
 
+            UserName = App.Current.Properties["UserName"] as string ?? "User";
             CopyRtmpUrlCommand = new RelayCommand(CopyRtmpUrl);
             CopyStreamKeyCommand = new RelayCommand(CopyStreamKey);
             DestinationClickCommand = new RelayCommand<DestinationItem>(OnDestination);
@@ -170,6 +163,7 @@ namespace StreamLoftApp.ViewModels
             LogoutCommand = new RelayCommand(async _ => await ExecuteLogoutAsync(), _ => !IsLoading);
             EventsCommand = new RelayCommand(_ => OnEventsClick?.Invoke(), _ => !IsLoading);
             UpdateBitrateCommand = new RelayCommand(async _ => await UpdateBitrateAsync(), _ => !IsLoading);
+            SettingsCommand = new RelayCommand(_ => OnSettingsClick?.Invoke(), _ => !IsLoading);
 
             LoadDataAsync();
         }
@@ -197,7 +191,6 @@ namespace StreamLoftApp.ViewModels
                         Application.Current?.Dispatcher.Invoke(() =>
                         {
                             IsLive = evt.Status?.ToLower() == "live";
-                            BitrateWarning = evt.BitrateWarning;
                         });
                     }
                 }
@@ -219,7 +212,6 @@ namespace StreamLoftApp.ViewModels
                         Application.Current?.Dispatcher.Invoke(() =>
                         {
                             IsLive = status.Status?.ToLower() == "live";
-                            BitrateWarning = status.BitrateWarning;
                         });
                     }
                     catch
@@ -262,8 +254,7 @@ namespace StreamLoftApp.ViewModels
                         Configured = dest.Configured,
                         Enabled = dest.Enabled,
                         StreamKey = dest.StreamKey ?? "",
-                        IsActive = dest.Enabled == 1 && dest.Configured && IsLive,
-                        BitLimited = dest.BitLimited
+                        IsActive = dest.Enabled == 1 && dest.Configured && IsLive
                     });
                 }
 
@@ -286,7 +277,6 @@ namespace StreamLoftApp.ViewModels
             {
                 var status = await _apiService.GetStreamStatusAsync();
                 IsLive = status.Status?.ToLower() == "live";
-                BitrateWarning = status.BitrateWarning;
             }
             catch
             {
@@ -412,6 +402,5 @@ namespace StreamLoftApp.ViewModels
         public int Enabled { get; set; }
         public bool IsActive { get; set; }
         public string? StreamKey { get; set; }
-        public int BitLimited { get; set; }
     }
 }

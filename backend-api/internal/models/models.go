@@ -26,7 +26,6 @@ type UserDestination struct {
 	Destination    *Destination `json:"destination,omitempty"`
 	StreamKey      *string      `json:"stream_key,omitempty"`
 	Enabled        int          `json:"enabled"` // 1=true, 0=false — runtime toggle
-	BitLimited     *int         `json:"bit_limited"` // 1=limit to 10000kbps, 0=no limit, null=not set
 	CreatedAt      time.Time    `json:"created_at"`
 	UpdatedAt      time.Time    `json:"updated_at"`
 }

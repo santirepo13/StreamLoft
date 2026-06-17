@@ -18,5 +18,4 @@ type UserRepository interface {
 	GetDestinationByID(ctx context.Context, userID, destinationID int) (*models.UserDestination, error)
 	UpdateDestinationStreamKey(ctx context.Context, userID, destinationID int, streamKey string) error
 	UpdateDestinationEnabled(ctx context.Context, userID, destinationID int, enabled int) error
-	UpdateDestinationBitLimited(ctx context.Context, userID, destinationID int, bitLimited int) error
 }

@@ -15,6 +15,7 @@ namespace StreamLoftApp.Views
             _viewModel.OnDestinationClick += NavigateToDestination;
             _viewModel.OnEventsClick += NavigateToEvents;
             _viewModel.OnLogout += NavigateToLogin;
+            _viewModel.OnSettingsClick += OpenSettings;
             _viewModel.OnDestinationSaved += RefreshDestinations;
             _viewModel.OnBitrateUpdated += RefreshBitrate;
             _viewModel.OnDestinationToggled += RefreshDestinationToggle;
@@ -26,7 +27,7 @@ namespace StreamLoftApp.Views
 
         private void NavigateToDestination(DestinationItem destination)
         {
-            var destWindow = new DestinationView(destination.Id, destination.Name ?? "", destination.Configured, destination.StreamKey ?? "", destination.BitLimited == 1);
+            var destWindow = new DestinationView(destination.Id, destination.Name ?? "", destination.Configured, destination.StreamKey ?? "");
             destWindow.ShowDialog();
 
             _viewModel.NotifyDestinationSaved();
@@ -37,6 +38,16 @@ namespace StreamLoftApp.Views
         {
             var eventsWindow = new EventsView();
             eventsWindow.ShowDialog();
+        }
+
+        private void OpenSettings()
+        {
+            var settingsWindow = new SettingsView(
+                _viewModel.RtmpUrl,
+                _viewModel.StreamKey,
+                _viewModel.ConfiguredBitrate
+            );
+            settingsWindow.ShowDialog();
         }
 
         private void NavigateToLogin()

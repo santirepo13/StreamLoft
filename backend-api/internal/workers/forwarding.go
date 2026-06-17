@@ -22,7 +22,6 @@ type ForwardingWorker struct {
 	lastHealthCheck time.Time
 	streamKey        string
 	destinationURL   string
-	bitLimited       bool
 	lastError        error
 	stderrBuf        *strings.Builder // Captures ffmpeg stderr
 }
@@ -138,12 +137,11 @@ func (m *ForwardingManager) scheduleWorkerRestart(key string, userID, userDestin
 	// Store the original parameters for restart
 	streamKey := worker.streamKey
 	destinationURL := worker.destinationURL
-	bitLimited := worker.bitLimited
 
 	m.mu.Unlock()
 
 	// Restart the worker
-	restartErr := m.StartWorker(context.Background(), userID, userDestinationID, streamKey, destinationURL, bitLimited)
+	restartErr := m.StartWorker(context.Background(), userID, userDestinationID, streamKey, destinationURL)
 	if restartErr != nil {
 		log.Error().
 			Int("user_id", userID).
@@ -153,7 +151,7 @@ func (m *ForwardingManager) scheduleWorkerRestart(key string, userID, userDestin
 	}
 }
 
-func (m *ForwardingManager) StartWorker(ctx context.Context, userID int, userDestinationID int, streamKey, destinationRTMPURL string, bitLimited bool) error {
+func (m *ForwardingManager) StartWorker(ctx context.Context, userID int, userDestinationID int, streamKey, destinationRTMPURL string) error {
 	key := m.workerKey(userID, userDestinationID)
 
 	m.mu.Lock()
@@ -198,21 +196,10 @@ func (m *ForwardingManager) StartWorker(ctx context.Context, userID int, userDes
 		"-metadata", "encoder=OBS Studio",
 	}
 
-	if bitLimited {
-		args = append(args,
-			"-c:v", "libx264",
-			"-preset", "ultrafast",
-			"-b:v", "10000k",
-			"-maxrate", "10000k",
-			"-bufsize", "10000k",
-			"-c:a", "copy",
-		)
-	} else {
-		args = append(args,
-			"-c:v", "copy",
-			"-c:a", "copy",
-		)
-	}
+	args = append(args,
+		"-c:v", "copy",
+		"-c:a", "copy",
+	)
 
 	args = append(args,
 		"-f", "flv",
@@ -272,7 +259,6 @@ func (m *ForwardingManager) StartWorker(ctx context.Context, userID int, userDes
 		lastHealthCheck: time.Now(),
 		streamKey:       streamKey,
 		destinationURL:  destinationRTMPURL,
-		bitLimited:      bitLimited,
 		stderrBuf:       stderrBuf,
 	}
 

@@ -143,13 +143,13 @@ namespace StreamLoftApp.Services
             throw new Exception($"Failed to get destinations: {response.StatusCode}");
         }
 
-        public async Task UpdateDestinationAsync(int destinationId, string streamKey, bool bitLimited = false)
+        public async Task UpdateDestinationAsync(int destinationId, string streamKey)
         {
             SetAuthHeader();
 
             var response = await _httpClient.PutAsync($"/destinations/{destinationId}",
                 new StringContent(
-                    JsonConvert.SerializeObject(new { stream_key = streamKey, bit_limited = bitLimited ? 1 : 0 }),
+                    JsonConvert.SerializeObject(new { stream_key = streamKey }),
                     Encoding.UTF8, "application/json"));
 
             if (!response.IsSuccessStatusCode)
@@ -346,9 +346,6 @@ namespace StreamLoftApp.Services
 
         [JsonProperty("stream_key")]
         public string? StreamKey { get; set; }
-
-        [JsonProperty("bit_limited")]
-        public int BitLimited { get; set; }
     }
 
     public class DestinationsResponse

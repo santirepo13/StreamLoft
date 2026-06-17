@@ -9,7 +9,6 @@
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
@@ -25,124 +24,35 @@
                        Style="{StaticResource PageTitleStyle}"
                        FontSize="24"/>
 
-            <Button Grid.Column="1"
-                    Content="Logout"
-                    Command="{Binding LogoutCommand}"
-                    Style="{StaticResource SecondaryButtonStyle}"
-                    Width="80" Height="30"
-                    FontSize="12"/>
+            <TextBlock Grid.Column="1"
+                       Text="{Binding UserName}"
+                       FontSize="14"
+                       Cursor="Hand"
+                       VerticalAlignment="Center">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Foreground" Value="{StaticResource ColorWhiteText}"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsLive}" Value="True">
+                                <Setter Property="Foreground" Value="{StaticResource ColorSuccess}"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+                <TextBlock.ContextMenu>
+                    <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                        <MenuItem Header="Settings" Command="{Binding SettingsCommand}"/>
+                        <MenuItem Header="Events" Command="{Binding EventsCommand}"/>
+                        <MenuItem Header="Logout" Command="{Binding LogoutCommand}"/>
+                    </ContextMenu>
+                </TextBlock.ContextMenu>
+            </TextBlock>
         </Grid>
 
-        <!-- Stream Info Panel -->
-        <Border Grid.Row="1"
-                Background="{StaticResource ColorSectionBg}"
-                CornerRadius="10"
-                Padding="20"
-                Margin="0,0,0,20">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
 
-                <!-- RTMP URL -->
-                <StackPanel Grid.Column="0" Margin="0,0,15,0">
-                    <TextBlock Text="StreamLoft RTMP URL"
-                               Style="{StaticResource FormLabelStyle}"
-                               Margin="0,0,0,5"/>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBox Text="{Binding RtmpUrl, Mode=OneWay}"
-                                 Style="{StaticResource ReadOnlyTextBoxStyle}"/>
-                        <Button Grid.Column="1"
-                                Content="Copy"
-                                Command="{Binding CopyRtmpUrlCommand}"
-                                Style="{StaticResource SmallDarkButtonStyle}"
-                                Width="60"
-                                Margin="5,0,0,0"/>
-                    </Grid>
-                </StackPanel>
-
-                <!-- Stream Key -->
-                <StackPanel Grid.Column="1" Margin="15,0,15,0">
-                    <TextBlock Text="StreamLoft Stream Key"
-                               Style="{StaticResource FormLabelStyle}"
-                               Margin="0,0,0,5"/>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBox Text="{Binding StreamKey, Mode=OneWay}"
-                                 Style="{StaticResource ReadOnlyTextBoxStyle}"/>
-                        <Button Grid.Column="1"
-                                Content="Copy"
-                                Command="{Binding CopyStreamKeyCommand}"
-                                Style="{StaticResource SmallDarkButtonStyle}"
-                                Width="60"
-                                Margin="5,0,0,0"/>
-                    </Grid>
-                </StackPanel>
-
-                 <!-- Status Indicator -->
-                 <StackPanel Grid.Column="2" HorizontalAlignment="Center">
-                     <TextBlock Text="Status"
-                                Style="{StaticResource FormLabelStyle}"
-                                Margin="0,0,0,5"
-                                HorizontalAlignment="Center"/>
-                     <Border CornerRadius="15"
-                             Padding="15,5"
-                             Background="{Binding IsLive, Converter={StaticResource LiveStatusBackgroundConverter}}">
-                         <TextBlock Text="{Binding StatusText}"
-                                    FontWeight="Bold"
-                                    FontSize="14"
-                                    Foreground="{StaticResource ColorDarkText}"/>
-                     </Border>
-                     <TextBlock Text="⚠ Low Bitrate"
-                                Foreground="{StaticResource ColorWarning}"
-                                FontSize="11"
-                                Margin="0,5,0,0"
-                                Visibility="{Binding BitrateWarning, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                 </StackPanel>
-
-                 <!-- Bitrate Setter -->
-                 <StackPanel Grid.Column="3" HorizontalAlignment="Right" Margin="15,0,0,0">
-                     <TextBlock Text="Upload Bitrate"
-                                Style="{StaticResource FormLabelStyle}"
-                                Margin="0,0,0,5"
-                                HorizontalAlignment="Center"/>
-                     <Grid>
-                         <Grid.ColumnDefinitions>
-                             <ColumnDefinition Width="80"/>
-                             <ColumnDefinition Width="Auto"/>
-                         </Grid.ColumnDefinitions>
-                         <TextBox Text="{Binding ConfiguredBitrate, Mode=TwoWay}"
-                                  HorizontalAlignment="Stretch"
-                                  Style="{StaticResource InputTextBoxStyle}"
-                                  VerticalContentAlignment="Center"/>
-                        <Button Grid.Column="1"
-                                Content="Set"
-                                Command="{Binding UpdateBitrateCommand}"
-                                Style="{StaticResource SmallDarkButtonStyle}"
-                                Width="50"
-                                Margin="5,0,0,0"/>
-                     </Grid>
-                     <TextBlock Text="kbps"
-                                Foreground="{StaticResource ColorWhiteText}"
-                                FontSize="11"
-                                Margin="0,2,0,0"
-                                HorizontalAlignment="Center"/>
-                 </StackPanel>
-            </Grid>
-        </Border>
 
         <!-- Destinations Section -->
-        <Border Grid.Row="2"
+        <Border Grid.Row="1"
                 Background="{StaticResource ColorSectionBg}"
                 CornerRadius="10"
                 Padding="20">
@@ -153,17 +63,10 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <Grid Grid.Row="0" Margin="0,0,0,15">
-                    <TextBlock Text="Destinations"
-                               Style="{StaticResource PageTitleStyle}"
-                               FontSize="18"/>
-
-                    <Button Content="View Events"
-                            Command="{Binding EventsCommand}"
-                            HorizontalAlignment="Right"
-                            Style="{StaticResource SmallPrimaryButtonStyle}"
-                            Width="100" Height="28"/>
-                </Grid>
+                <TextBlock Text="Destinations"
+                           Style="{StaticResource PageTitleStyle}"
+                           FontSize="18"
+                           Margin="0,0,0,15"/>
 
                 <!-- Destinations List -->
                 <ListBox Grid.Row="1"
@@ -221,7 +124,7 @@
         </Border>
 
         <!-- Loading Overlay -->
-        <controls:LoadingOverlay Grid.RowSpan="4"
+        <controls:LoadingOverlay Grid.RowSpan="3"
                                   IsVisible="{Binding IsLoading}"
                                   Message="Loading..." />
     </Grid>

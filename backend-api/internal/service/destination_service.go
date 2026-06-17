@@ -36,7 +36,6 @@ type destinationResponse struct {
 	Enabled    int    `json:"enabled"`      // 1=true, 0=false — runtime toggle
 	IsActive   bool   `json:"is_active"`    // worker currently running
 	StreamKey  string `json:"stream_key"`
-	BitLimited int    `json:"bit_limited"`  // 1=limit to 10000kbps, 0=no limit
 }
 
 func (s *DestinationService) GetDestinations(ctx context.Context, userID int) ([]destinationResponse, error) {
@@ -66,7 +65,6 @@ func (s *DestinationService) GetDestinations(ctx context.Context, userID int) ([
 			Enabled:    d.Enabled,
 			IsActive:   configured && d.Enabled == 1 && s.workerMgr.IsWorkerRunning(userID, d.ID),
 			StreamKey:  decryptedKey,
-			BitLimited: func() int { if d.BitLimited != nil { return *d.BitLimited }; return 0 }(),
 		}
 	}
 
@@ -118,50 +116,6 @@ func (s *DestinationService) UpdateStreamKey(ctx context.Context, userID, destin
 	}
 
 	return streamKey != "", nil
-}
-
-func (s *DestinationService) UpdateBitLimited(ctx context.Context, userID, destinationID int, bitLimited int) error {
-	if bitLimited != 0 && bitLimited != 1 {
-		return ErrInvalidInput
-	}
-
-	dest, err := s.userRepo.GetDestinationByID(ctx, userID, destinationID)
-	if err != nil {
-		return err
-	}
-	if dest == nil {
-		return ErrInvalidCredentials
-	}
-
-	if err := s.userRepo.UpdateDestinationBitLimited(ctx, userID, destinationID, bitLimited); err != nil {
-		return err
-	}
-
-	// Restart worker if live to apply new bitrate limit
-	isLive := s.streamChecker(userID)
-	if !isLive {
-		return nil
-	}
-
-	hasKey := dest.StreamKey != nil && *dest.StreamKey != ""
-
-	if bitLimited == 1 && dest.Enabled == 1 && hasKey {
-		if err := s.workerMgr.StopWorker(ctx, userID, destinationID); err != nil {
-			return err
-		}
-		if err := s.workerMgr.StartWorker(ctx, userID, destinationID); err != nil {
-			return err
-		}
-	} else if bitLimited == 0 && dest.Enabled == 1 && hasKey {
-		if err := s.workerMgr.StopWorker(ctx, userID, destinationID); err != nil {
-			return err
-		}
-		if err := s.workerMgr.StartWorker(ctx, userID, destinationID); err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
 
 func (s *DestinationService) ToggleDestination(ctx context.Context, userID, destinationID int, enabled int) error {

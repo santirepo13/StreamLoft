@@ -16,7 +16,6 @@ namespace StreamLoftApp.ViewModels
         private bool _isSaving;
         private string _errorMessage = null!;
         private bool _showSavedIndicator;
-        private bool _bitLimited;
 
         public string DestinationName
         {
@@ -60,12 +59,6 @@ namespace StreamLoftApp.ViewModels
             set => SetProperty(ref _showSavedIndicator, value);
         }
 
-        public bool BitLimited
-        {
-            get => _bitLimited;
-            set => SetProperty(ref _bitLimited, value);
-        }
-
         public ICommand SaveCommand { get; }
         public ICommand CancelCommand { get; }
 
@@ -73,7 +66,7 @@ namespace StreamLoftApp.ViewModels
         public event Action? OnCancel;
         public event Action? OnDestinationSaved;
 
-        public DestinationViewModel(int destinationId, string destinationName, bool isConfigured, string streamKey, bool bitLimited = false)
+        public DestinationViewModel(int destinationId, string destinationName, bool isConfigured, string streamKey)
         {
             _apiService = new ApiService(new TokenStorageService());
             _destinationId = destinationId;
@@ -83,7 +76,6 @@ namespace StreamLoftApp.ViewModels
             // Show actual stream key in the field
             StreamKeyInput = streamKey ?? "";
             _isConfigured = !string.IsNullOrEmpty(StreamKeyInput);
-            _bitLimited = bitLimited;
 
             SaveCommand = new RelayCommand(async _ => await ExecuteSaveAsync(), _ => !IsSaving);
             CancelCommand = new RelayCommand(_ => OnCancel?.Invoke());
@@ -107,7 +99,7 @@ namespace StreamLoftApp.ViewModels
 
             try
             {
-                await _apiService.UpdateDestinationAsync(_destinationId, StreamKeyInput ?? "", BitLimited);
+                await _apiService.UpdateDestinationAsync(_destinationId, StreamKeyInput ?? "");
 
                 // Update configured status based on saved value
                 IsConfigured = !string.IsNullOrEmpty(StreamKeyInput);
