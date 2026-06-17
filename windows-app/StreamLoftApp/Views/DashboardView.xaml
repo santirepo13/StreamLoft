@@ -24,29 +24,32 @@
                        Style="{StaticResource PageTitleStyle}"
                        FontSize="24"/>
 
-            <TextBlock Grid.Column="1"
-                       Text="{Binding UserName}"
-                       FontSize="14"
-                       Cursor="Hand"
-                       VerticalAlignment="Center">
-                <TextBlock.Style>
-                    <Style TargetType="TextBlock">
-                        <Setter Property="Foreground" Value="{StaticResource ColorWhiteText}"/>
+            <Button Grid.Column="1"
+                    Content="{Binding UserName}"
+                    Click="UserNameButton_Click"
+                    Height="30"
+                    FontSize="12"
+                    Padding="10,0">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding IsLive}" Value="True">
-                                <Setter Property="Foreground" Value="{StaticResource ColorSuccess}"/>
+                                <Setter Property="Background" Value="{StaticResource ColorSuccess}"/>
+                                <Setter Property="Foreground" Value="{StaticResource ColorDarkText}"/>
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
-                </TextBlock.Style>
-                <TextBlock.ContextMenu>
-                    <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                </Button.Style>
+                <Button.ContextMenu>
+                    <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}"
+                                 Style="{StaticResource AppContextMenuStyle}"
+                                 ItemContainerStyle="{StaticResource AppMenuItemStyle}">
                         <MenuItem Header="Settings" Command="{Binding SettingsCommand}"/>
                         <MenuItem Header="Events" Command="{Binding EventsCommand}"/>
                         <MenuItem Header="Logout" Command="{Binding LogoutCommand}"/>
                     </ContextMenu>
-                </TextBlock.ContextMenu>
-            </TextBlock>
+                </Button.ContextMenu>
+            </Button>
         </Grid>
 
 

@@ -10,6 +10,7 @@
     <SolidColorBrush x:Key="ColorDanger" Color="#FF4444"/>
     <SolidColorBrush x:Key="ColorWarning" Color="#FFA500"/>
     <SolidColorBrush x:Key="ColorSuccess" Color="#00FF00"/>
+    <SolidColorBrush x:Key="ColorContextMenuBg" Color="#62628E"/>
 
     <Style x:Key="AppWindowStyle" TargetType="Window">
         <Setter Property="Background" Value="{StaticResource ColorWindowBg}"/>
@@ -112,6 +113,52 @@
     <Style x:Key="TransparentListBoxStyle" TargetType="ListBox">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+
+    <Style x:Key="AppContextMenuStyle" TargetType="ContextMenu">
+        <Setter Property="OverridesDefaultStyle" Value="True"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ContextMenu">
+                    <Border Background="{StaticResource ColorContextMenuBg}"
+                            BorderThickness="0"
+                            SnapsToDevicePixels="True">
+                        <ItemsPresenter/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="AppMenuItemStyle" TargetType="MenuItem">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{StaticResource ColorWhiteText}"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="Padding" Value="8,4"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="MenuItem">
+                        <Border x:Name="Border"
+                                Background="Transparent"
+                                Padding="{TemplateBinding Padding}"
+                                SnapsToDevicePixels="True">
+                        <TextBlock x:Name="Text"
+                                   Text="{Binding Path=Header, RelativeSource={RelativeSource TemplatedParent}}"
+                                   Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource TemplatedParent}}"
+                                   FontSize="{Binding Path=FontSize, RelativeSource={RelativeSource TemplatedParent}}"
+                                   HorizontalAlignment="Stretch"
+                                   VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsHighlighted" Value="True">
+                            <Setter TargetName="Border" Property="Background" Value="{StaticResource ColorInputBg}"/>
+                            <Setter TargetName="Text" Property="Foreground" Value="{StaticResource ColorDarkText}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
 </ResourceDictionary>

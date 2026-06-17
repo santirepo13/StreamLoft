@@ -15,4 +15,4 @@ INSERT INTO user_destinations (user_id, destination_id, created_at, updated_at)
 SELECT u.id, d.id, NOW(), NOW()
 FROM users u
 CROSS JOIN destinations d
-WHERE u.numeric_id = '1017274212' AND d.id = 1;
+WHERE u.numeric_id = '1152465106' AND d.id = 2;

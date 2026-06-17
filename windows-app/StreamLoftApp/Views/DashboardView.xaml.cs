@@ -40,6 +40,15 @@ namespace StreamLoftApp.Views
             eventsWindow.ShowDialog();
         }
 
+        private void UserNameButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement element && element.ContextMenu != null)
+            {
+                element.ContextMenu.DataContext = element.DataContext;
+                element.ContextMenu.IsOpen = true;
+            }
+        }
+
         private void OpenSettings()
         {
             var settingsWindow = new SettingsView(
