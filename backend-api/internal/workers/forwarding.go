@@ -251,11 +251,16 @@ func (m *ForwardingManager) StartWorker(ctx context.Context, userID int, userDes
 		stderrR.Close()
 	}()
 
+	existingRestartCount := 0
+	if existing, ok := m.workers[key]; ok && !existing.isRunning {
+		existingRestartCount = existing.restartCount
+	}
+
 	worker := &ForwardingWorker{
 		process:        cmd,
 		isRunning:      true,
 		startTime:      time.Now(),
-		restartCount:   0,
+		restartCount:   existingRestartCount,
 		lastHealthCheck: time.Now(),
 		streamKey:       streamKey,
 		destinationURL:  destinationRTMPURL,
